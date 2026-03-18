@@ -1,23 +1,22 @@
-package org.singhak.kubera.parser
+package org.singhak.kubera.transaction
 
-import org.singhak.kubera.model.Transaction
-import org.singhak.kubera.model.TransactionType
+val knownSenderTags: Set<String> get() = senderTagToSmsPattern.keys
 
-private val groupNamePattern = Regex("""\(\?<(\w+)>""")
-
-private val senderToSmsPattern = mapOf(
-    "IN-INDBNK" to Regex("""A/c \*(?<accountNumber>\d+) debited Rs\. (?<amount>[\d,.]+) on [\d-]+ to (?<counterparty>.+?)\. UPI:(?<ref>\d+)"""),
+private val senderTagToSmsPattern = mapOf(
+    "INDBNK" to Regex("""A/c \*(?<accountNumber>\d+) debited Rs\. (?<amount>[\d,.]+) on [\d-]+ to (?<counterparty>.+?)\. UPI:(?<ref>\d+)"""),
 )
+private val groupNamePattern = Regex("""\(\?<(\w+)>""")
 
 /**
  * Parses a bank sms into a [Transaction].
  *
- * @param sender the sms sender identifier (e.g. "IN-INDBNK")
+ * @param sender the sms sender address (e.g. "JD-INDBNK-S")
  * @param sms the raw sms body
  * @return a [Transaction] if the sms matches a known pattern, or `null` otherwise
  */
 fun parseSms(sender: String, sms: String): Transaction? {
-    val smsPattern = senderToSmsPattern[sender] ?: return null
+    val senderTag = findSenderTag(sender) ?: return null
+    val smsPattern = senderTagToSmsPattern[senderTag] ?: return null
 
     val transactionFields = extractNamedGroups(smsPattern, sms)
     if (transactionFields.isEmpty()) return null
@@ -42,6 +41,15 @@ fun parseSms(sender: String, sms: String): Transaction? {
 }
 
 /**
+ * Finds the sender tag from a sender address using partial match.
+ *
+ * @param sender the full sender address (e.g. "JD-INDBNK-S")
+ * @return the matching sender tag (e.g. "INDBNK"), or `null` if no match
+ */
+private fun findSenderTag(sender: String): String? =
+    knownSenderTags.firstOrNull { sender.contains(it, ignoreCase = true) }
+
+/**
  * Extracts named group values from [input] using a regex with named transactionFields.
  *
  * @param pattern a regex like `(?<amount>\d+) worth of (?<item>\w+)`
@@ -54,4 +62,3 @@ private fun extractNamedGroups(pattern: Regex, input: String): Map<String, Strin
 
     return names.zip(match.groupValues.drop(1)).toMap()
 }
-

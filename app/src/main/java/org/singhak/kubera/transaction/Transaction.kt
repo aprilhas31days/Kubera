@@ -1,4 +1,4 @@
-package org.singhak.kubera.model
+package org.singhak.kubera.transaction
 
 enum class TransactionType {
     CREDIT,

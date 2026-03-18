@@ -1,9 +1,12 @@
 package org.singhak.kubera
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,33 +21,46 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.singhak.kubera.model.Transaction
-import org.singhak.kubera.model.TransactionType
-import org.singhak.kubera.parser.parseSms
+import androidx.core.content.ContextCompat
+import org.singhak.kubera.transaction.Transaction
+import org.singhak.kubera.transaction.TransactionType
+import org.singhak.kubera.transaction.readCurrentMonthTransactions
 import org.singhak.kubera.ui.theme.KuberaTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private const val SENDER_INDIAN_BANK = "IN-INDBNK"
-
-private val DEBIT_MESSAGES = listOf(
-    SENDER_INDIAN_BANK to "A/c *5949 debited Rs. 1060.82 on 06-03-26 to JIO. UPI:643163976386. Not you? SMS BLOCK to 9289592895, Dial 1930 for Cyber Fraud - Indian Bank"
-)
-
 class MainActivity : ComponentActivity() {
+
+    private var transactions by mutableStateOf<List<Transaction>>(emptyList())
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            transactions = readCurrentMonthTransactions(contentResolver)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val transactions = DEBIT_MESSAGES.mapNotNull { (senderId, sms) ->
-            parseSms(senderId, sms)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            transactions = readCurrentMonthTransactions(contentResolver)
+        } else {
+            permissionLauncher.launch(Manifest.permission.READ_SMS)
         }
 
         setContent {
@@ -106,7 +122,7 @@ fun TransactionCard(transaction: Transaction) {
                     style = MaterialTheme.typography.bodySmall
                 )
                 if (transaction.timestamp != 0L) {
-                    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                    val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
                     Text(
                         text = dateFormat.format(Date(transaction.timestamp)),
                         style = MaterialTheme.typography.bodySmall
