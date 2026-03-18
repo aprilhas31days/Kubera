@@ -3,7 +3,10 @@ package org.singhak.kubera.transaction
 val knownSenderTags: Set<String> get() = senderTagToSmsPattern.keys
 
 private val senderTagToSmsPattern = mapOf(
-    "INDBNK" to Regex("""A/c \*(?<accountNumber>\d+) debited Rs\. (?<amount>[\d,.]+) on [\d-]+ to (?<counterparty>.+?)\. UPI:(?<ref>\d+)"""),
+    "INDBNK" to
+        Regex(
+            """A/c \*(?<accountNumber>\d+) debited Rs\. (?<amount>[\d,.]+) on [\d-]+ to (?<counterparty>.+?)\. UPI:(?<ref>\d+)"""
+        )
 )
 private val groupNamePattern = Regex("""\(\?<(\w+)>""")
 
