@@ -26,7 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -91,9 +90,9 @@ fun TransactionList(transactions: List<Transaction>, modifier: Modifier = Modifi
 @Composable
 fun TransactionCard(transaction: Transaction) {
     val amountColor = if (transaction.type == TransactionType.CREDIT) {
-        Color(0xFF2E7D32)
+        MaterialTheme.colorScheme.primary
     } else {
-        Color(0xFFC62828)
+        MaterialTheme.colorScheme.error
     }
     val amountPrefix = if (transaction.type == TransactionType.CREDIT) "+" else "-"
 

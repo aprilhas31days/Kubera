@@ -2,6 +2,7 @@ package org.singhak.kubera.transaction
 
 val knownSenderTags: Set<String> get() = senderTagToSmsPattern.keys
 
+@Suppress("MaxLineLength")
 private val senderTagToSmsPattern = mapOf(
     "INDBNK" to
         Regex(
@@ -17,6 +18,7 @@ private val groupNamePattern = Regex("""\(\?<(\w+)>""")
  * @param sms the raw sms body
  * @return a [Transaction] if the sms matches a known pattern, or `null` otherwise
  */
+@Suppress("ReturnCount")
 fun parseSms(sender: String, sms: String): Transaction? {
     val senderTag = findSenderTag(sender) ?: return null
     val smsPattern = senderTagToSmsPattern[senderTag] ?: return null

@@ -1,7 +1,7 @@
 complexity:
   LongParameterList:
-    allowedFunctionParameters: 6
-    allowedConstructorParameters: 8
+    functionThreshold: 6
+    constructorThreshold: 8
     ignoreDefaultParameters: true
     ignoreAnnotatedParameter:
       - "Composable"
@@ -24,8 +24,3 @@ naming:
       - "Composable"
   TopLevelPropertyNaming:
     constantPattern: '[A-Z][A-Za-z0-9]*'
-
-exceptions:
-  UnusedPrivateFunction:
-    ignoreAnnotated:
-      - "Preview"
