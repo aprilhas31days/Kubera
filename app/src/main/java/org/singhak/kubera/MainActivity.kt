@@ -17,13 +17,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.singhak.kubera.data.KuberaDatabase
 import org.singhak.kubera.data.TransactionRepository
 import org.singhak.kubera.ui.home.HomeScreen
 import org.singhak.kubera.ui.home.HomeViewModel
 import org.singhak.kubera.ui.theme.KuberaTheme
 
 class MainActivity : ComponentActivity() {
-    private val repository by lazy { TransactionRepository(contentResolver) }
+    private val repository by lazy {
+        val dao = KuberaDatabase.getInstance(this).transactionDao()
+        TransactionRepository(contentResolver, dao)
+    }
     private var smsPermissionGranted by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
@@ -50,7 +54,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(smsPermissionGranted) {
                 if (smsPermissionGranted) {
-                    homeViewModel.loadTransactions()
+                    homeViewModel.syncTransactions()
                 }
             }
 

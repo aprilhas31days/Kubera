@@ -4,20 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.singhak.kubera.data.TransactionRepository
-import org.singhak.kubera.model.Transaction
 
 class HomeViewModel(private val repository: TransactionRepository) : ViewModel() {
-    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
-    val transactions: StateFlow<List<Transaction>> = _transactions.asStateFlow()
 
-    fun loadTransactions() {
+    val transactions = repository.getCurrentMonthTransactions()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+    fun syncTransactions() {
         viewModelScope.launch(Dispatchers.IO) {
-            _transactions.value = repository.getCurrentMonthTransactions()
+            repository.syncFromSms()
         }
     }
 

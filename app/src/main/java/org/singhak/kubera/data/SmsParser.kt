@@ -22,7 +22,7 @@ private val groupNamePattern = Regex("""\(\?<(\w+)>""")
  * @return a [Transaction] if the sms matches a known pattern, or `null` otherwise
  */
 @Suppress("ReturnCount")
-fun parseSms(sender: String, sms: String): Transaction? {
+fun parseSms(smsId: Long, sender: String, sms: String): Transaction? {
     val senderTag = findSenderTag(sender) ?: return null
     val smsPattern = senderTagToSmsPattern[senderTag] ?: return null
 
@@ -40,6 +40,7 @@ fun parseSms(sender: String, sms: String): Transaction? {
     val timestamp = System.currentTimeMillis()
 
     return Transaction(
+        smsId = smsId,
         amount = amount,
         type = type,
         accountNumber = accountNumber,

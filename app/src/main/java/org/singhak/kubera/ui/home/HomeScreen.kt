@@ -268,6 +268,7 @@ private fun HomeScreenPreview() {
         HomeScreen(
             transactions = listOf(
                 Transaction(
+                    smsId = 1,
                     amount = 1299.00,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
@@ -275,6 +276,7 @@ private fun HomeScreenPreview() {
                     bank = "Apple Store"
                 ),
                 Transaction(
+                    smsId = 2,
                     amount = 265.00,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
@@ -282,6 +284,7 @@ private fun HomeScreenPreview() {
                     bank = "Equinox Holdings"
                 ),
                 Transaction(
+                    smsId = 3,
                     amount = 6.50,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
@@ -289,6 +292,7 @@ private fun HomeScreenPreview() {
                     bank = "Blue Bottle Coffee"
                 ),
                 Transaction(
+                    smsId = 4,
                     amount = 4200.00,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
@@ -296,6 +300,7 @@ private fun HomeScreenPreview() {
                     bank = "Aman Resorts"
                 ),
                 Transaction(
+                    smsId = 5,
                     amount = 88.40,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
@@ -303,6 +308,7 @@ private fun HomeScreenPreview() {
                     bank = "Shell Petrol"
                 ),
                 Transaction(
+                    smsId = 6,
                     amount = 15000.00,
                     type = TransactionType.CREDIT,
                     accountNumber = "*5949",
