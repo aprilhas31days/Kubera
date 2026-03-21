@@ -1,4 +1,4 @@
-package org.singhak.kubera.home
+package org.singhak.kubera.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,15 +29,12 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import org.singhak.kubera.transaction.Transaction
-import org.singhak.kubera.transaction.TransactionType
+import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.theme.KuberaTheme
 
 @Composable
-fun HomeScreen(
-    transactions: List<Transaction>,
-    modifier: Modifier = Modifier,
-) {
+fun HomeScreen(transactions: List<Transaction>, modifier: Modifier = Modifier) {
     val grouped = remember(transactions) { groupTransactionsByDate(transactions) }
     val totalExpenditure = remember(transactions) {
         transactions
@@ -48,7 +45,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Header
         item { BalanceHeader(totalExpenditure = totalExpenditure) }
@@ -80,20 +77,20 @@ private fun BalanceHeader(totalExpenditure: Double) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp, top = 64.dp, bottom = 32.dp),
+            .padding(start = 24.dp, end = 24.dp, top = 64.dp, bottom = 32.dp)
     ) {
         Text(
             text = "TOTAL EXPENDITURE \u00B7 $monthLabel",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.outline
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "\u20B9${"%, .2f".format(totalExpenditure)}",
             style = MaterialTheme.typography.displayMedium.copy(
-                letterSpacing = (-1.5).sp,
+                letterSpacing = (-1.5).sp
             ),
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -108,12 +105,12 @@ private fun DateSectionHeader(label: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.outline
         )
         Spacer(modifier = Modifier.weight(1f))
         // Ghost divider at 20% opacity
@@ -123,8 +120,8 @@ private fun DateSectionHeader(label: String) {
                 .weight(3f)
                 .height(0.5.dp)
                 .background(
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-                ),
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+                )
         )
     }
 }
@@ -154,32 +151,32 @@ private fun TransactionItem(transaction: Transaction) {
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         ) {
             // Status orb
             Box(
                 modifier = Modifier
                     .size(6.dp)
                     .clip(CircleShape)
-                    .background(dotColor),
+                    .background(dotColor)
             )
             Column(modifier = Modifier.padding(start = 16.dp)) {
                 Text(
                     text = transaction.bank,
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Medium
                     ),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 if (timeText.isNotEmpty()) {
                     Text(
                         text = timeText,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
+                        color = MaterialTheme.colorScheme.outline
                     )
                 }
             }
@@ -188,9 +185,9 @@ private fun TransactionItem(transaction: Transaction) {
             text = "$prefix\u20B9${"%, .2f".format(transaction.amount)}",
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp,
+                letterSpacing = (-0.5).sp
             ),
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -205,12 +202,12 @@ private fun LedgerFooter() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "END OF AUDIT",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.outline
         )
         Spacer(modifier = Modifier.height(12.dp))
         Box(
@@ -218,8 +215,8 @@ private fun LedgerFooter() {
                 .size(4.dp)
                 .clip(CircleShape)
                 .background(
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                ),
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
         )
     }
 }
@@ -229,7 +226,7 @@ private fun LedgerFooter() {
 // region — Helpers
 
 private fun groupTransactionsByDate(
-    transactions: List<Transaction>,
+    transactions: List<Transaction>
 ): List<Pair<String, List<Transaction>>> {
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     val today = Calendar.getInstance()
@@ -275,44 +272,44 @@ private fun HomeScreenPreview() {
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
                     timestamp = now,
-                    bank = "Apple Store",
+                    bank = "Apple Store"
                 ),
                 Transaction(
                     amount = 265.00,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
                     timestamp = now - 3_600_000,
-                    bank = "Equinox Holdings",
+                    bank = "Equinox Holdings"
                 ),
                 Transaction(
                     amount = 6.50,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
                     timestamp = now - 7_200_000,
-                    bank = "Blue Bottle Coffee",
+                    bank = "Blue Bottle Coffee"
                 ),
                 Transaction(
                     amount = 4200.00,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
                     timestamp = now - oneDay,
-                    bank = "Aman Resorts",
+                    bank = "Aman Resorts"
                 ),
                 Transaction(
                     amount = 88.40,
                     type = TransactionType.DEBIT,
                     accountNumber = "*5949",
                     timestamp = now - oneDay - 3_600_000,
-                    bank = "Shell Petrol",
+                    bank = "Shell Petrol"
                 ),
                 Transaction(
                     amount = 15000.00,
                     type = TransactionType.CREDIT,
                     accountNumber = "*5949",
                     timestamp = now - oneDay * 3,
-                    bank = "Salary Credit",
-                ),
-            ),
+                    bank = "Salary Credit"
+                )
+            )
         )
     }
 }

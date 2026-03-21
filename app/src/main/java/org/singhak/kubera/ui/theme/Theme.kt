@@ -40,7 +40,7 @@ private val KuberaColorScheme = darkColorScheme(
     surfaceContainerLow = SurfaceContainerLow,
     surfaceContainer = SurfaceContainer,
     surfaceContainerHigh = SurfaceContainerHigh,
-    surfaceContainerHighest = SurfaceContainerHighest,
+    surfaceContainerHighest = SurfaceContainerHighest
 )
 
 // "Embrace Sharp Edges" — 0px radius everywhere
@@ -49,7 +49,7 @@ private val KuberaShapes = Shapes(
     small = RoundedCornerShape(0.dp),
     medium = RoundedCornerShape(0.dp),
     large = RoundedCornerShape(0.dp),
-    extraLarge = RoundedCornerShape(0.dp),
+    extraLarge = RoundedCornerShape(0.dp)
 )
 
 @Composable
@@ -58,6 +58,6 @@ fun KuberaTheme(content: @Composable () -> Unit) {
         colorScheme = KuberaColorScheme,
         typography = Typography,
         shapes = KuberaShapes,
-        content = content,
+        content = content
     )
 }

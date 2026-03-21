@@ -1,8 +1,9 @@
-package org.singhak.kubera.transaction
+package org.singhak.kubera.data
 
 import android.content.ContentResolver
 import android.provider.Telephony
 import java.util.Calendar
+import org.singhak.kubera.model.Transaction
 
 fun readCurrentMonthTransactions(contentResolver: ContentResolver): List<Transaction> {
     val monthStart = Calendar.getInstance().apply {

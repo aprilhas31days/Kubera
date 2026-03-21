@@ -9,41 +9,51 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import org.singhak.kubera.home.HomeScreen
-import org.singhak.kubera.transaction.Transaction
-import org.singhak.kubera.transaction.readCurrentMonthTransactions
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.singhak.kubera.data.TransactionRepository
+import org.singhak.kubera.ui.home.HomeScreen
+import org.singhak.kubera.ui.home.HomeViewModel
 import org.singhak.kubera.ui.theme.KuberaTheme
 
 class MainActivity : ComponentActivity() {
-
-    private var transactions by mutableStateOf<List<Transaction>>(emptyList())
+    private val repository by lazy { TransactionRepository(contentResolver) }
+    private var smsPermissionGranted by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            transactions = readCurrentMonthTransactions(contentResolver)
-        }
+        smsPermissionGranted = granted
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            transactions = readCurrentMonthTransactions(contentResolver)
+        if (hasSmsPermission()) {
+            smsPermissionGranted = true
         } else {
             permissionLauncher.launch(Manifest.permission.READ_SMS)
         }
 
         setContent {
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModel.Factory(repository)
+            )
+            val transactions by homeViewModel.transactions.collectAsState()
+
+            LaunchedEffect(smsPermissionGranted) {
+                if (smsPermissionGranted) {
+                    homeViewModel.loadTransactions()
+                }
+            }
+
             KuberaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     HomeScreen(transactions = transactions)
@@ -51,4 +61,8 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun hasSmsPermission(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) ==
+            PackageManager.PERMISSION_GRANTED
 }

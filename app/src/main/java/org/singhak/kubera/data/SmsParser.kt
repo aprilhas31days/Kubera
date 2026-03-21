@@ -1,4 +1,7 @@
-package org.singhak.kubera.transaction
+package org.singhak.kubera.data
+
+import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionType
 
 val knownSenderTags: Set<String> get() = senderTagToSmsPattern.keys
 
