@@ -9,25 +9,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
-import org.singhak.kubera.data.KuberaDatabase
-import org.singhak.kubera.data.TransactionRepository
+import androidx.hilt.navigation.compose.hiltViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import org.singhak.kubera.ui.home.HomeScreen
 import org.singhak.kubera.ui.home.HomeViewModel
 import org.singhak.kubera.ui.theme.KuberaTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val repository by lazy {
-        val dao = KuberaDatabase.getInstance(this).transactionDao()
-        TransactionRepository(contentResolver, dao)
-    }
     private var smsPermissionGranted by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
@@ -47,9 +43,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val homeViewModel: HomeViewModel = viewModel(
-                factory = HomeViewModel.Factory(repository)
-            )
+            val homeViewModel: HomeViewModel = hiltViewModel()
             val transactions by homeViewModel.transactions.collectAsState()
 
             LaunchedEffect(smsPermissionGranted) {

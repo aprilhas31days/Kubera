@@ -1,12 +1,12 @@
 package org.singhak.kubera.data
 
-import android.content.ContentResolver
 import java.util.Calendar
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import org.singhak.kubera.model.Transaction
 
-class TransactionRepository(
-    private val contentResolver: ContentResolver,
+class TransactionRepository @Inject constructor(
+    private val smsReader: SmsReader,
     private val transactionDao: TransactionDao
 ) {
 
@@ -23,7 +23,7 @@ class TransactionRepository(
 
     suspend fun syncFromSms() {
         val lastTimestamp = transactionDao.getLastTimestamp()
-        val newTransactions = readSmsTransactions(contentResolver, lastTimestamp)
+        val newTransactions = smsReader.readTransactions(lastTimestamp)
         if (newTransactions.isNotEmpty()) {
             transactionDao.insertAll(newTransactions)
         }
