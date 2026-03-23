@@ -10,6 +10,16 @@ class SmsReader @Inject constructor(
     private val contentResolver: ContentResolver
 ) {
 
+    /**
+     * Reads bank SMS messages from the inbox and parses them into transactions.
+     *
+     * Queries SMS from registered banks since [afterTimestamp] or the start of
+     * the current month, whichever is later.
+     *
+     * @param afterTimestamp only read SMS newer than this epoch millis (defaults to month start)
+     *
+     * @return parsed transactions sorted by date descending
+     */
     fun readTransactions(afterTimestamp: Long? = null): List<Transaction> {
         val monthStart = Calendar.getInstance().apply {
             set(Calendar.DAY_OF_MONTH, 1)
@@ -25,7 +35,7 @@ class SmsReader @Inject constructor(
             monthStart
         }
 
-        val senderTags = knownSenderTags
+        val senderTags = registeredBanks
         if (senderTags.isEmpty()) return emptyList()
 
         val likeClauses = senderTags.joinToString(" OR ") {

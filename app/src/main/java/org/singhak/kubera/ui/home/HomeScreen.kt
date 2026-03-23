@@ -271,7 +271,7 @@ private fun HomeScreenPreview() {
                     smsId = 1,
                     amount = 1299.00,
                     type = TransactionType.DEBIT,
-                    accountNumber = "*5949",
+
                     timestamp = now,
                     bank = "Apple Store"
                 ),
@@ -279,7 +279,7 @@ private fun HomeScreenPreview() {
                     smsId = 2,
                     amount = 265.00,
                     type = TransactionType.DEBIT,
-                    accountNumber = "*5949",
+
                     timestamp = now - 3_600_000,
                     bank = "Equinox Holdings"
                 ),
@@ -287,7 +287,7 @@ private fun HomeScreenPreview() {
                     smsId = 3,
                     amount = 6.50,
                     type = TransactionType.DEBIT,
-                    accountNumber = "*5949",
+
                     timestamp = now - 7_200_000,
                     bank = "Blue Bottle Coffee"
                 ),
@@ -295,7 +295,7 @@ private fun HomeScreenPreview() {
                     smsId = 4,
                     amount = 4200.00,
                     type = TransactionType.DEBIT,
-                    accountNumber = "*5949",
+
                     timestamp = now - oneDay,
                     bank = "Aman Resorts"
                 ),
@@ -303,7 +303,7 @@ private fun HomeScreenPreview() {
                     smsId = 5,
                     amount = 88.40,
                     type = TransactionType.DEBIT,
-                    accountNumber = "*5949",
+
                     timestamp = now - oneDay - 3_600_000,
                     bank = "Shell Petrol"
                 ),
@@ -311,7 +311,7 @@ private fun HomeScreenPreview() {
                     smsId = 6,
                     amount = 15000.00,
                     type = TransactionType.CREDIT,
-                    accountNumber = "*5949",
+
                     timestamp = now - oneDay * 3,
                     bank = "Salary Credit"
                 )

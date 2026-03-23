@@ -13,7 +13,6 @@ data class Transaction(
     @PrimaryKey val smsId: Long,
     val amount: Double,
     val type: TransactionType,
-    val accountNumber: String,
-    val timestamp: Long,
+val timestamp: Long,
     val bank: String
 )
