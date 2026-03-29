@@ -18,9 +18,9 @@ class HomeViewModel @Inject constructor(
     val transactions = repository.getCurrentMonthTransactions()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    fun syncTransactions() {
+    fun backfillTransactions() {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.syncFromSms()
+            repository.backfillFromSms()
         }
     }
 }

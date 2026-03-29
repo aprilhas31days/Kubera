@@ -1,6 +1,7 @@
 package org.singhak.kubera.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 enum class TransactionType {
@@ -8,11 +9,14 @@ enum class TransactionType {
     DEBIT
 }
 
-@Entity(tableName = "transactions")
+@Entity(
+    tableName = "transactions",
+    indices = [Index(value = ["amount", "timestamp", "bank"], unique = true)]
+)
 data class Transaction(
-    @PrimaryKey val smsId: Long,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val amount: Double,
     val type: TransactionType,
-val timestamp: Long,
+    val timestamp: Long,
     val bank: String
 )

@@ -22,7 +22,7 @@ object AppModule {
             context.applicationContext,
             KuberaDatabase::class.java,
             "kubera.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
 
     @Provides
     fun provideTransactionDao(database: KuberaDatabase): TransactionDao =

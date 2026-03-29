@@ -27,9 +27,9 @@ class MainActivity : ComponentActivity() {
     private var smsPermissionGranted by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        smsPermissionGranted = granted
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        smsPermissionGranted = permissions.values.all { it }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +39,12 @@ class MainActivity : ComponentActivity() {
         if (hasSmsPermission()) {
             smsPermissionGranted = true
         } else {
-            permissionLauncher.launch(Manifest.permission.READ_SMS)
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.RECEIVE_SMS,
+                )
+            )
         }
 
         setContent {
@@ -48,7 +53,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(smsPermissionGranted) {
                 if (smsPermissionGranted) {
-                    homeViewModel.syncTransactions()
+                    homeViewModel.backfillTransactions()
                 }
             }
 
@@ -62,5 +67,7 @@ class MainActivity : ComponentActivity() {
 
     private fun hasSmsPermission(): Boolean =
         ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) ==
+            PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) ==
             PackageManager.PERMISSION_GRANTED
 }

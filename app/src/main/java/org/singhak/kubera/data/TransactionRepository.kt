@@ -7,8 +7,12 @@ import org.singhak.kubera.model.Transaction
 
 class TransactionRepository @Inject constructor(
     private val smsReader: SmsReader,
-    private val transactionDao: TransactionDao
+    private val transactionDao: TransactionDao,
 ) {
+
+    suspend fun insert(transaction: Transaction) {
+        transactionDao.insert(transaction)
+    }
 
     fun getCurrentMonthTransactions(): Flow<List<Transaction>> {
         val monthStart = Calendar.getInstance().apply {
@@ -21,11 +25,11 @@ class TransactionRepository @Inject constructor(
         return transactionDao.getTransactionsSince(monthStart)
     }
 
-    suspend fun syncFromSms() {
-        val lastTimestamp = transactionDao.getLastTimestamp()
-        val newTransactions = smsReader.readTransactions(lastTimestamp)
-        if (newTransactions.isNotEmpty()) {
-            transactionDao.insertAll(newTransactions)
+    suspend fun backfillFromSms() {
+        if (transactionDao.getLastTimestamp() != null) return
+        val transactions = smsReader.readTransactions()
+        if (transactions.isNotEmpty()) {
+            transactionDao.insertAll(transactions)
         }
     }
 }

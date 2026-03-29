@@ -11,6 +11,9 @@ import org.singhak.kubera.model.Transaction
 interface TransactionDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(transaction: Transaction)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(transactions: List<Transaction>)
 
     @Query("SELECT * FROM transactions WHERE timestamp >= :fromTimestamp ORDER BY timestamp DESC")

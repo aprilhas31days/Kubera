@@ -50,7 +50,6 @@ class SmsReader @Inject constructor(
         contentResolver.query(
             Telephony.Sms.Inbox.CONTENT_URI,
             arrayOf(
-                Telephony.Sms.Inbox._ID,
                 Telephony.Sms.Inbox.ADDRESS,
                 Telephony.Sms.Inbox.BODY,
                 Telephony.Sms.Inbox.DATE
@@ -59,18 +58,16 @@ class SmsReader @Inject constructor(
             selectionArgs,
             "${Telephony.Sms.Inbox.DATE} DESC"
         )?.use { cursor ->
-            val idIndex = cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox._ID)
             val addressIndex = cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox.ADDRESS)
             val bodyIndex = cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox.BODY)
             val dateIndex = cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox.DATE)
 
             while (cursor.moveToNext()) {
-                val id = cursor.getLong(idIndex)
                 val address = cursor.getString(addressIndex)
                 val body = cursor.getString(bodyIndex)
                 val date = cursor.getLong(dateIndex)
 
-                val transaction = parseSms(id, address, body)?.copy(timestamp = date)
+                val transaction = parseSms(address, body)?.copy(timestamp = date)
                 if (transaction != null) {
                     transactions.add(transaction)
                 }
