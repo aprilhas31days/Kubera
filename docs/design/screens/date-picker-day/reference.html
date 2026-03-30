@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-fixed-dim": "#454747",
+            "outline-variant": "#474747",
+            "on-surface-variant": "#c6c6c6",
+            "on-primary-fixed-variant": "#e2e2e2",
+            "primary-container": "#d4d4d4",
+            "surface-tint": "#c6c6c7",
+            "on-primary": "#1a1c1c",
+            "on-primary-container": "#000000",
+            "inverse-surface": "#e5e2e1",
+            "on-error": "#690005",
+            "on-surface": "#e5e2e1",
+            "secondary-fixed-dim": "#ababab",
+            "surface-container-highest": "#353534",
+            "on-primary-fixed": "#ffffff",
+            "on-error-container": "#ffdad6",
+            "on-secondary": "#1b1c1c",
+            "inverse-on-surface": "#313030",
+            "secondary-fixed": "#c7c6c6",
+            "surface-container": "#201f1f",
+            "tertiary-container": "#929090",
+            "tertiary": "#e5e2e1",
+            "surface-container-lowest": "#0e0e0e",
+            "surface-container-low": "#1c1b1b",
+            "on-tertiary-fixed-variant": "#e5e2e1",
+            "background": "#131313",
+            "surface-container-high": "#2a2a2a",
+            "primary-fixed": "#5d5f5f",
+            "on-tertiary-container": "#000000",
+            "secondary": "#c7c6c6",
+            "on-tertiary": "#1c1b1b",
+            "on-secondary-fixed-variant": "#3b3b3c",
+            "secondary-container": "#464747",
+            "tertiary-fixed": "#5f5e5e",
+            "surface": "#131313",
+            "inverse-primary": "#5d5f5f",
+            "tertiary-fixed-dim": "#474746",
+            "on-tertiary-fixed": "#ffffff",
+            "primary": "#ffffff",
+            "outline": "#919191",
+            "on-secondary-container": "#e3e2e2",
+            "on-background": "#e5e2e1",
+            "surface-bright": "#393939",
+            "error-container": "#93000a",
+            "surface-dim": "#131313",
+            "surface-variant": "#353534",
+            "on-secondary-fixed": "#1b1c1c",
+            "error": "#ffb4ab"
+          },
+          fontFamily: {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .display-lg {
+      font-size: 2.5rem;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .label-sm {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .calendar-cell {
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen overflow-hidden relative">
+<!-- Background: Ledger Empty State (Simulated) -->
+<div class="absolute inset-0 z-0 flex flex-col p-6 opacity-40 pointer-events-none">
+<header class="mb-12">
+<div class="label-sm text-outline mb-4">FINANCIAL LEDGER</div>
+<h1 class="display-lg text-primary font-normal">NO RECORDS FOUND</h1>
+</header>
+<div class="flex-grow flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-6xl text-outline-variant mb-4">drafts</span>
+<p class="text-on-surface-variant font-['Inter'] text-sm tracking-widest">TAP + TO INITIATE ENTRY</p>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+<!-- Date Picker Dialog -->
+<div class="bg-surface-container w-full max-w-md shadow-2xl flex flex-col border border-outline-variant/30">
+<!-- Dialog Body -->
+<div class="p-6">
+<header class="mb-8">
+<h2 class="text-2xl text-primary font-normal tracking-tight">OCTOBER 2023</h2>
+</header>
+<!-- Calendar Grid -->
+<div class="grid grid-cols-7 mb-2">
+<div class="label-sm text-outline/60 calendar-cell !h-auto py-2">S</div>
+<div class="label-sm text-outline/60 calendar-cell !h-auto py-2">M</div>
+<div class="label-sm text-outline/60 calendar-cell !h-auto py-2">T</div>
+<div class="label-sm text-outline/60 calendar-cell !h-auto py-2">W</div>
+<div class="label-sm text-outline/60 calendar-cell !h-auto py-2">T</div>
+<div class="label-sm text-outline/60 calendar-cell !h-auto py-2">F</div>
+<div class="label-sm text-outline/60 calendar-cell !h-auto py-2">S</div>
+</div>
+<div class="grid grid-cols-7 border-collapse">
+<!-- Row 1 -->
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">26</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">27</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">28</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">29</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">30</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">01</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">02</div>
+<!-- Row 2 -->
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">03</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">04</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">05</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">06</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">07</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">08</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">09</div>
+<!-- Row 3 (Contains Current Day with dot) -->
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">10</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">11</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">12</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">13</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">14</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">15</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">16</div>
+<!-- Row 4 (Contains Selected Day) -->
+<div class="calendar-cell label-sm bg-primary text-on-primary border border-primary">17</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">18</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">19</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">20</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">21</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">22</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">23</div>
+<!-- Row 5 -->
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">24</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">25</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">26</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">27</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">28</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">29</div>
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">30</div>
+<!-- Row 6 -->
+<div class="calendar-cell label-sm border border-outline-variant/5 hover:bg-surface-container-highest cursor-pointer">31</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">01</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">02</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">03</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">04</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">05</div>
+<div class="calendar-cell text-outline/20 label-sm bg-surface-container-low border border-outline-variant/5">06</div>
+</div>
+</div>
+<!-- Dialog Footer -->
+<div class="p-6 pt-0 flex gap-4">
+<button class="flex-1 border border-outline-variant/30 text-on-surface py-5 label-sm tracking-[0.2em] hover:bg-surface-container-high transition-colors rounded-none">
+                CANCEL
+            </button>
+<button class="flex-[2] bg-primary text-on-primary py-5 label-sm tracking-[0.2em] hover:bg-on-surface hover:text-surface transition-colors rounded-none">
+                CONFIRM SELECTION
+            </button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation: Always visible at bottom -->
+<footer class="bg-[#131313] fixed bottom-0 left-0 w-full z-50 flex justify-around items-stretch h-16 border-t border-outline-variant/10">
+<div class="flex flex-col items-center justify-center bg-[#ffffff] text-[#131313] p-2 h-full flex-grow cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-['Inter'] uppercase tracking-[0.1em] text-[0.6875rem]">LEDGER</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#e5e2e1] p-2 h-full flex-grow hover:bg-[#1c1b1b] cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="Insert_chart">insert_chart</span>
+<span class="font-['Inter'] uppercase tracking-[0.1em] text-[0.6875rem]">INSIGHTS</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#e5e2e1] p-2 h-full flex-grow hover:bg-[#1c1b1b] cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="qr_code_scanner">qr_code_scanner</span>
+<span class="font-['Inter'] uppercase tracking-[0.1em] text-[0.6875rem]">SCAN</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#e5e2e1] p-2 h-full flex-grow hover:bg-[#1c1b1b] cursor-pointer">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-['Inter'] uppercase tracking-[0.1em] text-[0.6875rem]">ACCOUNT</span>
+</div>
+</footer>
+</body></html>
