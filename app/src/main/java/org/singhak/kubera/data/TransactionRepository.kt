@@ -25,11 +25,11 @@ class TransactionRepository @Inject constructor(
         return transactionDao.getTransactionsSince(monthStart)
     }
 
-    suspend fun backfillFromSms() {
-        if (transactionDao.getLastTimestamp() != null) return
-        val transactions = smsReader.readTransactions()
+    suspend fun backfillFromDate(fromDate: Long): Boolean {
+        val transactions = smsReader.readTransactions(afterTimestamp = fromDate)
         if (transactions.isNotEmpty()) {
             transactionDao.insertAll(transactions)
         }
+        return transactions.isNotEmpty()
     }
 }

@@ -1,8 +1,11 @@
 package org.singhak.kubera
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,7 +15,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
@@ -50,18 +52,26 @@ class MainActivity : ComponentActivity() {
         setContent {
             val homeViewModel: HomeViewModel = hiltViewModel()
             val transactions by homeViewModel.transactions.collectAsState()
-
-            LaunchedEffect(smsPermissionGranted) {
-                if (smsPermissionGranted) {
-                    homeViewModel.backfillTransactions()
-                }
-            }
+            val backfillState by homeViewModel.backfillState.collectAsState()
 
             KuberaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    HomeScreen(transactions = transactions)
+                    HomeScreen(
+                        transactions = transactions,
+                        hasPermission = smsPermissionGranted,
+                        backfillState = backfillState,
+                        onGrantAccess = { openAppSettings() },
+                        onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
+                    )
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!smsPermissionGranted && hasSmsPermission()) {
+            smsPermissionGranted = true
         }
     }
 
@@ -70,4 +80,12 @@ class MainActivity : ComponentActivity() {
             PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) ==
             PackageManager.PERMISSION_GRANTED
+
+    private fun openAppSettings() {
+        startActivity(
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            }
+        )
+    }
 }

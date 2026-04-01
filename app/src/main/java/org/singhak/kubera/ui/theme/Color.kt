@@ -36,3 +36,6 @@ val TertiaryContainer = Color(0xFF90909A)
 val InverseSurface = Color(0xFFE5E2E1)
 val InverseOnSurface = Color(0xFF313030)
 val InversePrimary = Color(0xFF5D5F5F)
+
+// Signature credit color
+val Credit = Color(0xFFA3E635)
