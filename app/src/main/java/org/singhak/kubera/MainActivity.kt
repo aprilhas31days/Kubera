@@ -51,14 +51,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val homeViewModel: HomeViewModel = hiltViewModel()
+            val monthSummary by homeViewModel.monthSummary.collectAsState()
             val transactions by homeViewModel.transactions.collectAsState()
             val backfillState by homeViewModel.backfillState.collectAsState()
 
             KuberaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     HomeScreen(
-                        transactions = transactions,
                         hasPermission = smsPermissionGranted,
+                        monthSummary = monthSummary,
+                        transactions = transactions,
                         backfillState = backfillState,
                         onGrantAccess = { openAppSettings() },
                         onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },

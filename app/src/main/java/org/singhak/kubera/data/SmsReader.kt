@@ -2,7 +2,6 @@ package org.singhak.kubera.data
 
 import android.content.ContentResolver
 import android.provider.Telephony
-import java.util.Calendar
 import javax.inject.Inject
 import org.singhak.kubera.model.Transaction
 
@@ -16,24 +15,11 @@ class SmsReader @Inject constructor(
      * Queries SMS from registered banks since [afterTimestamp] or the start of
      * the current month, whichever is later.
      *
-     * @param afterTimestamp only read SMS newer than this epoch millis (defaults to month start)
+     * @param afterTimestamp only read SMS newer than this epoch millis
      *
      * @return parsed transactions sorted by date descending
      */
-    fun readTransactions(afterTimestamp: Long? = null): List<Transaction> {
-        val monthStart = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
-        val fromTimestamp = if (afterTimestamp != null && afterTimestamp > monthStart) {
-            afterTimestamp
-        } else {
-            monthStart
-        }
+    fun readTransactions(afterTimestamp: Long): List<Transaction> {
 
         val senderTags = registeredBanks
         if (senderTags.isEmpty()) return emptyList()
@@ -43,7 +29,7 @@ class SmsReader @Inject constructor(
         }
         val selection = "${Telephony.Sms.Inbox.DATE} > ? AND ($likeClauses)"
         val selectionArgs =
-            arrayOf(fromTimestamp.toString()) + senderTags.map { "%$it%" }.toTypedArray()
+            arrayOf(afterTimestamp.toString()) + senderTags.map { "%$it%" }.toTypedArray()
 
         val transactions = mutableListOf<Transaction>()
 

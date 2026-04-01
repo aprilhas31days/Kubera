@@ -28,23 +28,30 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.theme.Credit
 
 @Composable
-internal fun TransactionList(transactions: List<Transaction>, modifier: Modifier = Modifier) {
+internal fun TransactionList(
+    monthSummary: MonthSummary,
+    transactions: List<Transaction>,
+    modifier: Modifier = Modifier,
+) {
     val grouped = remember(transactions) { groupTransactionsByDate(transactions) }
-    val totalExpenditure = remember(transactions) {
-        transactions.filter { it.type == TransactionType.DEBIT }.sumOf { it.amount }
-    }
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        item { BalanceHeader(totalExpenditure = totalExpenditure, entryCount = transactions.size) }
+        item {
+            BalanceHeader(
+                totalExpenditure = monthSummary.totalExpenditure,
+                entryCount = monthSummary.entryCount,
+            )
+        }
 
         grouped.forEach { (dateLabel, dayTransactions) ->
             val dailyTotal = dayTransactions

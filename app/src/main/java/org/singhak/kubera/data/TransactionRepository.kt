@@ -3,6 +3,7 @@ package org.singhak.kubera.data
 import java.util.Calendar
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 
 class TransactionRepository @Inject constructor(
@@ -14,7 +15,7 @@ class TransactionRepository @Inject constructor(
         transactionDao.insert(transaction)
     }
 
-    fun getCurrentMonthTransactions(): Flow<List<Transaction>> {
+    fun getCurrentMonthSummary(): Flow<MonthSummary> {
         val monthStart = Calendar.getInstance().apply {
             set(Calendar.DAY_OF_MONTH, 1)
             set(Calendar.HOUR_OF_DAY, 0)
@@ -22,8 +23,10 @@ class TransactionRepository @Inject constructor(
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
-        return transactionDao.getTransactionsSince(monthStart)
+        return transactionDao.getMonthSummary(monthStart)
     }
+
+    fun getAllTransactions(): Flow<List<Transaction>> = transactionDao.getAllTransactions()
 
     suspend fun backfillFromDate(fromDate: Long): Boolean {
         val transactions = smsReader.readTransactions(afterTimestamp = fromDate)

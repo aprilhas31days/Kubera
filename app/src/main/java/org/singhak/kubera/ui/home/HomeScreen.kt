@@ -9,14 +9,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.theme.KuberaTheme
 
 @Composable
 fun HomeScreen(
-    transactions: List<Transaction>,
     hasPermission: Boolean,
+    monthSummary: MonthSummary,
+    transactions: List<Transaction>?,
     backfillState: BackfillState,
     onGrantAccess: () -> Unit,
     onBackfillFromDate: (Long) -> Unit,
@@ -27,11 +29,15 @@ fun HomeScreen(
     Box(modifier = modifier.fillMaxSize()) {
         when {
             !hasPermission -> NoPermissionScreen(onGrantAccess = onGrantAccess)
+            transactions == null -> Unit
             transactions.isEmpty() -> EmptyStateScreen(
                 backfillState = backfillState,
                 onLoadFromSms = { showDatePicker = true },
             )
-            else -> TransactionList(transactions = transactions)
+            else -> TransactionList(
+                monthSummary = monthSummary,
+                transactions = transactions,
+            )
         }
 
         if (showDatePicker) {
@@ -54,16 +60,18 @@ fun HomeScreen(
 private fun TransactionListPreview() {
     val now = System.currentTimeMillis()
     val oneDay = 86_400_000L
+    val transactions = listOf(
+        Transaction(amount = 1299.00, type = TransactionType.DEBIT, timestamp = now, bank = "Apple Store"),
+        Transaction(amount = 265.00, type = TransactionType.DEBIT, timestamp = now - 3_600_000, bank = "Equinox Holdings"),
+        Transaction(amount = 6.50, type = TransactionType.DEBIT, timestamp = now - 7_200_000, bank = "Blue Bottle Coffee"),
+        Transaction(amount = 4200.00, type = TransactionType.DEBIT, timestamp = now - oneDay, bank = "Aman Resorts"),
+        Transaction(amount = 15000.00, type = TransactionType.CREDIT, timestamp = now - oneDay * 3, bank = "Salary Credit"),
+    )
     KuberaTheme {
         HomeScreen(
-            transactions = listOf(
-                Transaction(amount = 1299.00, type = TransactionType.DEBIT, timestamp = now, bank = "Apple Store"),
-                Transaction(amount = 265.00, type = TransactionType.DEBIT, timestamp = now - 3_600_000, bank = "Equinox Holdings"),
-                Transaction(amount = 6.50, type = TransactionType.DEBIT, timestamp = now - 7_200_000, bank = "Blue Bottle Coffee"),
-                Transaction(amount = 4200.00, type = TransactionType.DEBIT, timestamp = now - oneDay, bank = "Aman Resorts"),
-                Transaction(amount = 15000.00, type = TransactionType.CREDIT, timestamp = now - oneDay * 3, bank = "Salary Credit"),
-            ),
             hasPermission = true,
+            monthSummary = MonthSummary(totalExpenditure = 5770.50, entryCount = 5),
+            transactions = transactions,
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
             onBackfillFromDate = {},
@@ -77,8 +85,9 @@ private fun TransactionListPreview() {
 private fun EmptyStatePreview() {
     KuberaTheme {
         HomeScreen(
-            transactions = emptyList(),
             hasPermission = true,
+            monthSummary = MonthSummary(0.0, 0),
+            transactions = emptyList(),
             backfillState = BackfillState.NoResults,
             onGrantAccess = {},
             onBackfillFromDate = {},
@@ -92,8 +101,9 @@ private fun EmptyStatePreview() {
 private fun NoPermissionPreview() {
     KuberaTheme {
         HomeScreen(
-            transactions = emptyList(),
             hasPermission = false,
+            monthSummary = MonthSummary(0.0, 0),
+            transactions = emptyList(),
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
             onBackfillFromDate = {},
