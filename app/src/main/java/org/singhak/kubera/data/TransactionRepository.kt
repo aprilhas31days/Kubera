@@ -9,10 +9,12 @@ import org.singhak.kubera.model.Transaction
 class TransactionRepository @Inject constructor(
     private val smsReader: SmsReader,
     private val transactionDao: TransactionDao,
+    private val categoryRuleDao: CategoryRuleDao,
 ) {
 
     suspend fun insert(transaction: Transaction) {
-        transactionDao.insert(transaction)
+        val rules = categoryRuleDao.getAllRules()
+        transactionDao.insert(transaction.copy(category = categorize(transaction.merchant, rules)))
     }
 
     fun getCurrentMonthSummary(): Flow<MonthSummary> {
@@ -29,7 +31,9 @@ class TransactionRepository @Inject constructor(
     fun getAllTransactions(): Flow<List<Transaction>> = transactionDao.getAllTransactions()
 
     suspend fun backfillFromDate(fromDate: Long): Boolean {
+        val rules = categoryRuleDao.getAllRules()
         val transactions = smsReader.readTransactions(afterTimestamp = fromDate)
+            .map { it.copy(category = categorize(it.merchant, rules)) }
         if (transactions.isNotEmpty()) {
             transactionDao.insertAll(transactions)
         }

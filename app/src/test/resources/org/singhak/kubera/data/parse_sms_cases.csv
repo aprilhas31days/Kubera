@@ -1,7 +1,0 @@
-sender,sms,expectedAmount,expectedType
-JD-INDBNK-S,A/c XX1234 debited Rs. 500.00 on 20-Mar-26 by UPI ref 412345678901,500.0,DEBIT
-"VM-INDBNK","A/c XX5678 debited Rs. 1,25,000.75 on 15-Jan-26 by UPI ref 999999999999",125000.75,DEBIT
-JD-INDBNK-S,Rs.1200.00 credited to a/c XX1234 on 20-Mar-26 by UPI ref 412345678901,1200.0,CREDIT
-"AD-INDBNK","Your A/c XX9876 is debited by Rs. 3,000.00 on 10-Feb-26",3000.0,DEBIT
-"VM-INDBNK","Your A/c XX9876 is credited by Rs. 50,000.00 on 10-Feb-26",50000.0,CREDIT
-jd-indbnk-s,A/c XX1234 debited Rs. 100.00 on 01-Jan-26 by UPI ref 000000000000,100.0,DEBIT

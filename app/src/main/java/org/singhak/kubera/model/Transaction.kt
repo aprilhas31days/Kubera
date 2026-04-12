@@ -3,6 +3,7 @@ package org.singhak.kubera.model
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import org.singhak.kubera.model.TransactionCategory.OTHER
 
 enum class TransactionType {
     CREDIT,
@@ -18,5 +19,7 @@ data class Transaction(
     val amount: Double,
     val type: TransactionType,
     val timestamp: Long,
-    val bank: String
+    val bank: String,
+    val merchant: String? = null,
+    val category: TransactionCategory = OTHER,
 )

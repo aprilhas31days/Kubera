@@ -2,6 +2,7 @@ package org.singhak.kubera.data
 
 enum class SmsPlaceholder(val key: String, val pattern: String) {
     AMOUNT("amount", """[\d,.]+"""),
+    MERCHANT("merchant", """[^.]+"""),
     SKIP("...", """.+?"""),
 }
 
@@ -32,7 +33,7 @@ fun compileTemplate(template: String): Regex {
             if (placeholder == SmsPlaceholder.SKIP) {
                 append(placeholder.pattern)
             } else {
-                append("(${placeholder.pattern})")
+                append("(?<${key}>${placeholder.pattern})")
             }
 
             lastEnd = match.range.last + 1

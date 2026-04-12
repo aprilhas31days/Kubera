@@ -17,10 +17,10 @@ private val bankSmsPatterns: Map<String, Map<SmsType, Map<TransactionType, Regex
     INDIAN_BANK to mapOf(
         SmsType.UPI to mapOf(
             DEBIT to compileTemplate(
-                "A/c {...} debited Rs. {amount} {...}"
+                "A/c {...} debited Rs. {amount} {...} to {merchant}."
             ),
             CREDIT to compileTemplate(
-                "Rs.{amount} credited to a/c {...}"
+                "Rs.{amount} credited to a/c {...} by a/c linked to VPA {merchant} ("
             ),
         ),
         SmsType.BALANCE to mapOf(

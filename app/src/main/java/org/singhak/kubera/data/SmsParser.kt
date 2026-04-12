@@ -26,14 +26,16 @@ fun parseSms(sender: String, sms: String): Transaction? {
     val regex = patternFor(bank, smsType, transactionType) ?: return null
     val match = regex.find(sms) ?: return null
 
-    val amount = match.groupValues.getOrNull(1)
+    val amount = match.groups["amount"]?.value
         ?.replace(",", "")?.toDoubleOrNull() ?: return null
+    val merchant = runCatching { match.groups["merchant"]?.value?.trim() }.getOrNull()
 
     return Transaction(
         amount = amount,
         type = transactionType,
         timestamp = System.currentTimeMillis(),
         bank = sender,
+        merchant = merchant,
     )
 }
 

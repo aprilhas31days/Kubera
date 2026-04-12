@@ -1,0 +1,68 @@
+[
+  {
+    "input": {
+      "sender": "JD-INDBNK-S",
+      "sms": "A/c *1234 debited Rs. 500.00 on 20-03-26 to SWIGGY. UPI:609924385923. Not you? SMS BLOCK to 9289592895, Dial 1930 for Cyber Fraud - Indian Bank"
+    },
+    "expected": {
+      "amount": 500.0,
+      "type": "DEBIT",
+      "merchant": "SWIGGY"
+    }
+  },
+  {
+    "input": {
+      "sender": "VM-INDBNK",
+      "sms": "A/c *5678 debited Rs. 1,25,000.75 on 15-01-26 to LE TRAVENUES. UPI:999999999999. Not you? SMS BLOCK to 9289592895, Dial 1930 for Cyber Fraud - Indian Bank"
+    },
+    "expected": {
+      "amount": 125000.75,
+      "type": "DEBIT",
+      "merchant": "LE TRAVENUES"
+    }
+  },
+  {
+    "input": {
+      "sender": "JD-INDBNK-S",
+      "sms": "Rs.1200.00 credited to a/c XX1234 on 20-03-26 by a/c linked to VPA sender@okaxis (UPI Ref no 412345678901).Indian Bank"
+    },
+    "expected": {
+      "amount": 1200.0,
+      "type": "CREDIT",
+      "merchant": "sender@okaxis"
+    }
+  },
+  {
+    "input": {
+      "sender": "AD-INDBNK",
+      "sms": "Your A/c XX9876 is debited by Rs. 3,000.00 on 10-Feb-26"
+    },
+    "expected": {
+      "amount": 3000.0,
+      "type": "DEBIT",
+      "merchant": null
+    }
+  },
+  {
+    "input": {
+      "sender": "VM-INDBNK",
+      "sms": "Your A/c XX9876 is credited by Rs. 50,000.00 on 10-Feb-26"
+    },
+    "expected": {
+      "amount": 50000.0,
+      "type": "CREDIT",
+      "merchant": null
+    }
+  },
+  {
+    "input": {
+      "sender": "jd-indbnk-s",
+      "sms": "A/c *1234 debited Rs. 100.00 on 01-01-26 to BLINKIT. UPI:000000000000. Not you? SMS BLOCK to 9289592895, Dial 1930 for Cyber Fraud - Indian Bank"
+    },
+    "expected": {
+      "amount": 100.0,
+      "type": "DEBIT",
+      "merchant": "BLINKIT"
+    }
+  }
+]

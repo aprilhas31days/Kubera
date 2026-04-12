@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.android.junit5)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -15,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "org.singhak.kubera"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -95,6 +96,7 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.params)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

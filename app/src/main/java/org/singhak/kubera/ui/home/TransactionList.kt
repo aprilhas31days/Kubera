@@ -28,8 +28,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import org.singhak.kubera.data.registeredBanks
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.theme.Credit
 
@@ -190,12 +192,30 @@ private fun TransactionItem(transaction: Transaction) {
                     .size(4.dp)
                     .background(dotColor.copy(alpha = if (isCredit) 1f else 0.4f)),
             )
-            Text(
-                text = transaction.bank,
-                modifier = Modifier.padding(start = 24.dp),
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
-                color = MaterialTheme.colorScheme.primary,
-            )
+            Column(modifier = Modifier.padding(start = 24.dp)) {
+                Text(
+                    text = transaction.merchant ?: transaction.bank,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                val bankTag = remember(transaction.bank) {
+                    registeredBanks.firstOrNull {
+                        transaction.bank.contains(it, ignoreCase = true)
+                    } ?: transaction.bank
+                }
+                val subtitleText = remember(bankTag, transaction.category) {
+                    if (transaction.category != TransactionCategory.OTHER) {
+                        "$bankTag · ${transaction.category.displayName.uppercase()}"
+                    } else {
+                        bankTag
+                    }
+                }
+                Text(
+                    text = subtitleText,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+            }
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(
