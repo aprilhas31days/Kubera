@@ -18,10 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-internal fun EmptyStateScreen(
-    backfillState: BackfillState,
-    onLoadFromSms: () -> Unit,
-) {
+internal fun EmptyStateScreen(backfillState: BackfillState, onLoadFromSms: () -> Unit) {
     val isLoading = backfillState is BackfillState.Loading
 
     Column(
@@ -29,28 +26,28 @@ internal fun EmptyStateScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 32.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "LEDGER\nEMPTY",
             style = MaterialTheme.typography.displaySmall.copy(
                 fontWeight = FontWeight.Normal,
-                letterSpacing = (-1).sp,
+                letterSpacing = (-1).sp
             ),
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = "No transactions found. Synchronize your ledger by loading bank SMS messages. This process will index incoming financial data into your private journal.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         if (backfillState is BackfillState.NoResults) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "NO TRANSACTIONS FOUND IN THE SELECTED PERIOD.",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline
             )
         }
         Spacer(modifier = Modifier.height(48.dp))
@@ -58,12 +55,12 @@ internal fun EmptyStateScreen(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primary)
                 .clickable(enabled = !isLoading, onClick = onLoadFromSms)
-                .padding(horizontal = 40.dp, vertical = 20.dp),
+                .padding(horizontal = 40.dp, vertical = 20.dp)
         ) {
             Text(
                 text = if (isLoading) "LOADING\u2026" else "LOAD FROM SMS",
                 style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }

@@ -31,7 +31,7 @@
         </activity>
 
         <receiver
-            android:name=".data.SmsBroadcastReceiver"
+            android:name=".sms.SmsBroadcastReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />

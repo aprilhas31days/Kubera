@@ -28,30 +28,30 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import org.singhak.kubera.data.registeredBanks
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.model.TransactionType
+import org.singhak.kubera.sms.registeredBanks
 import org.singhak.kubera.ui.theme.Credit
 
 @Composable
 internal fun TransactionList(
     monthSummary: MonthSummary,
     transactions: List<Transaction>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val grouped = remember(transactions) { groupTransactionsByDate(transactions) }
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background)
     ) {
         item {
             BalanceHeader(
                 totalExpenditure = monthSummary.totalExpenditure,
-                entryCount = monthSummary.entryCount,
+                entryCount = monthSummary.entryCount
             )
         }
 
@@ -81,41 +81,41 @@ private fun BalanceHeader(totalExpenditure: Double, entryCount: Int) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp, top = 64.dp, bottom = 32.dp),
+            .padding(start = 24.dp, end = 24.dp, top = 64.dp, bottom = 32.dp)
     ) {
         Text(
             text = "TOTAL EXPENDITURE",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.outline
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "\u20B9${"%, .2f".format(totalExpenditure)}",
             style = MaterialTheme.typography.displayLarge.copy(
                 fontWeight = FontWeight.Normal,
-                letterSpacing = (-1.5).sp,
+                letterSpacing = (-1.5).sp
             ),
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = monthLabel,
                 style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline
             )
             Text(
                 text = "\u2022",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline
             )
             Text(
                 text = "$entryCount ENTRIES",
                 style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline
             )
         }
     }
@@ -127,24 +127,24 @@ private fun DateSectionHeader(label: String, dailyTotal: Double) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .padding(top = 8.dp),
+            .padding(top = 8.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 6.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.Bottom
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline
             )
             Text(
                 text = "\u20B9${"%, .2f".format(dailyTotal)}",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
             )
         }
         @Suppress("MagicNumber")
@@ -152,7 +152,7 @@ private fun DateSectionHeader(label: String, dailyTotal: Double) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(0.5.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
         )
         Spacer(modifier = Modifier.height(8.dp))
     }
@@ -181,22 +181,24 @@ private fun TransactionItem(transaction: Transaction) {
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         ) {
             Box(
                 modifier = Modifier
                     .size(4.dp)
-                    .background(dotColor.copy(alpha = if (isCredit) 1f else 0.4f)),
+                    .background(dotColor.copy(alpha = if (isCredit) 1f else 0.4f))
             )
             Column(modifier = Modifier.padding(start = 24.dp)) {
                 Text(
                     text = transaction.merchant ?: transaction.bank,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
-                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = MaterialTheme.colorScheme.primary
                 )
                 val bankTag = remember(transaction.bank) {
                     registeredBanks.firstOrNull {
@@ -213,7 +215,7 @@ private fun TransactionItem(transaction: Transaction) {
                 Text(
                     text = subtitleText,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    color = MaterialTheme.colorScheme.outlineVariant
                 )
             }
         }
@@ -222,15 +224,15 @@ private fun TransactionItem(transaction: Transaction) {
                 text = amountText,
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Normal,
-                    letterSpacing = (-0.5).sp,
+                    letterSpacing = (-0.5).sp
                 ),
-                color = amountColor,
+                color = amountColor
             )
             if (timeText.isNotEmpty()) {
                 Text(
                     text = timeText,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    color = MaterialTheme.colorScheme.outlineVariant
                 )
             }
         }
@@ -243,25 +245,25 @@ private fun LedgerFooter() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "END OF AUDIT",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.outline
         )
         Spacer(modifier = Modifier.height(12.dp))
         Box(
             modifier = Modifier
                 .size(4.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         )
     }
 }
 
 private fun groupTransactionsByDate(
-    transactions: List<Transaction>,
+    transactions: List<Transaction>
 ): List<Pair<String, List<Transaction>>> {
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     val today = Calendar.getInstance()

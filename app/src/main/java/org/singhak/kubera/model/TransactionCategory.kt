@@ -11,5 +11,5 @@ enum class TransactionCategory(val displayName: String) {
     INVESTMENTS("Investments"),
     RENT("Rent"),
     ENTERTAINMENT("Entertainment"),
-    OTHER("Other"),
+    OTHER("Other")
 }

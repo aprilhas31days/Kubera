@@ -1,4 +1,4 @@
-package org.singhak.kubera.data
+package org.singhak.kubera.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

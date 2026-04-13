@@ -24,33 +24,33 @@ internal fun NoPermissionScreen(onGrantAccess: () -> Unit) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 32.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "SMS ACCESS\nREQUIRED",
             style = MaterialTheme.typography.displaySmall.copy(
                 fontWeight = FontWeight.Normal,
-                letterSpacing = (-1).sp,
+                letterSpacing = (-1).sp
             ),
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = "To synchronize your financial records, this application requires read access to bank SMS messages. Data is processed locally on your device to maintain your private journal.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(48.dp))
         Box(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primary)
                 .clickable(onClick = onGrantAccess)
-                .padding(horizontal = 40.dp, vertical = 20.dp),
+                .padding(horizontal = 40.dp, vertical = 20.dp)
         ) {
             Text(
                 text = "GRANT ACCESS",
                 style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }

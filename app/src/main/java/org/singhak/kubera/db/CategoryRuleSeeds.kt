@@ -1,4 +1,4 @@
-package org.singhak.kubera.data
+package org.singhak.kubera.db
 
 import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.model.TransactionCategory.BILLS
@@ -38,5 +38,5 @@ fun systemCategoryKeywords(): List<Pair<String, TransactionCategory>> = listOf(
 
     "mutual fund" to INVESTMENTS,
 
-    "nobroker" to RENT,
+    "nobroker" to RENT
 )

@@ -22,7 +22,7 @@ fun HomeScreen(
     backfillState: BackfillState,
     onGrantAccess: () -> Unit,
     onBackfillFromDate: (Long) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -32,11 +32,11 @@ fun HomeScreen(
             transactions == null -> Unit
             transactions.isEmpty() -> EmptyStateScreen(
                 backfillState = backfillState,
-                onLoadFromSms = { showDatePicker = true },
+                onLoadFromSms = { showDatePicker = true }
             )
             else -> TransactionList(
                 monthSummary = monthSummary,
-                transactions = transactions,
+                transactions = transactions
             )
         }
 
@@ -46,7 +46,7 @@ fun HomeScreen(
                 onConfirm = { millis ->
                     showDatePicker = false
                     onBackfillFromDate(millis)
-                },
+                }
             )
         }
     }
@@ -61,11 +61,36 @@ private fun TransactionListPreview() {
     val now = System.currentTimeMillis()
     val oneDay = 86_400_000L
     val transactions = listOf(
-        Transaction(amount = 1299.00, type = TransactionType.DEBIT, timestamp = now, bank = "Apple Store"),
-        Transaction(amount = 265.00, type = TransactionType.DEBIT, timestamp = now - 3_600_000, bank = "Equinox Holdings"),
-        Transaction(amount = 6.50, type = TransactionType.DEBIT, timestamp = now - 7_200_000, bank = "Blue Bottle Coffee"),
-        Transaction(amount = 4200.00, type = TransactionType.DEBIT, timestamp = now - oneDay, bank = "Aman Resorts"),
-        Transaction(amount = 15000.00, type = TransactionType.CREDIT, timestamp = now - oneDay * 3, bank = "Salary Credit"),
+        Transaction(
+            amount = 1299.00,
+            type = TransactionType.DEBIT,
+            timestamp = now,
+            bank = "Apple Store"
+        ),
+        Transaction(
+            amount = 265.00,
+            type = TransactionType.DEBIT,
+            timestamp = now - 3_600_000,
+            bank = "Equinox Holdings"
+        ),
+        Transaction(
+            amount = 6.50,
+            type = TransactionType.DEBIT,
+            timestamp = now - 7_200_000,
+            bank = "Blue Bottle Coffee"
+        ),
+        Transaction(
+            amount = 4200.00,
+            type = TransactionType.DEBIT,
+            timestamp = now - oneDay,
+            bank = "Aman Resorts"
+        ),
+        Transaction(
+            amount = 15000.00,
+            type = TransactionType.CREDIT,
+            timestamp = now - oneDay * 3,
+            bank = "Salary Credit"
+        )
     )
     KuberaTheme {
         HomeScreen(
@@ -74,7 +99,7 @@ private fun TransactionListPreview() {
             transactions = transactions,
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
-            onBackfillFromDate = {},
+            onBackfillFromDate = {}
         )
     }
 }
@@ -90,7 +115,7 @@ private fun EmptyStatePreview() {
             transactions = emptyList(),
             backfillState = BackfillState.NoResults,
             onGrantAccess = {},
-            onBackfillFromDate = {},
+            onBackfillFromDate = {}
         )
     }
 }
@@ -106,7 +131,7 @@ private fun NoPermissionPreview() {
             transactions = emptyList(),
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
-            onBackfillFromDate = {},
+            onBackfillFromDate = {}
         )
     }
 }

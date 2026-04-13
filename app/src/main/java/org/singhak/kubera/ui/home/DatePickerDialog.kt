@@ -36,10 +36,7 @@ private enum class DatePickerMode { DAY, YEAR }
 
 @Suppress("MagicNumber")
 @Composable
-internal fun DatePickerDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (Long) -> Unit,
-) {
+internal fun DatePickerDialog(onDismiss: () -> Unit, onConfirm: (Long) -> Unit) {
     val today = remember { Calendar.getInstance() }
     var mode by remember { mutableStateOf(DatePickerMode.DAY) }
     var viewYear by remember { mutableIntStateOf(today.get(Calendar.YEAR)) }
@@ -57,9 +54,9 @@ internal fun DatePickerDialog(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onDismiss,
+                onClick = onDismiss
             ),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.Center
     ) {
         // Dialog container — consumes clicks so scrim doesn't dismiss
         Column(
@@ -71,15 +68,15 @@ internal fun DatePickerDialog(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = {},
-                ),
+                    onClick = {}
+                )
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 // Header: nav arrows + month/year label
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "<",
@@ -87,14 +84,15 @@ internal fun DatePickerDialog(
                             .clickable {
                                 if (mode == DatePickerMode.DAY) {
                                     val (y, m) = prevMonth(viewYear, viewMonth)
-                                    viewYear = y; viewMonth = m
+                                    viewYear = y
+                                    viewMonth = m
                                 } else {
                                     yearPageStart -= 12
                                 }
                             }
                             .padding(8.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
@@ -104,11 +102,14 @@ internal fun DatePickerDialog(
                             "SELECT YEAR"
                         },
                         modifier = Modifier.clickable {
-                            mode = if (mode == DatePickerMode.DAY) DatePickerMode.YEAR
-                            else DatePickerMode.DAY
+                            mode = if (mode == DatePickerMode.DAY) {
+                                DatePickerMode.YEAR
+                            } else {
+                                DatePickerMode.DAY
+                            }
                         },
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     Text(
@@ -117,14 +118,15 @@ internal fun DatePickerDialog(
                             .clickable {
                                 if (mode == DatePickerMode.DAY) {
                                     val (y, m) = nextMonth(viewYear, viewMonth)
-                                    viewYear = y; viewMonth = m
+                                    viewYear = y
+                                    viewMonth = m
                                 } else {
                                     yearPageStart += 12
                                 }
                             }
                             .padding(8.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -141,7 +143,7 @@ internal fun DatePickerDialog(
                             selectedDay = day
                             selectedYear = viewYear
                             selectedMonth = viewMonth
-                        },
+                        }
                     )
                 } else {
                     YearGrid(
@@ -151,7 +153,7 @@ internal fun DatePickerDialog(
                             selectedYear = year
                             viewYear = year
                             mode = DatePickerMode.DAY
-                        },
+                        }
                     )
                 }
             }
@@ -161,7 +163,7 @@ internal fun DatePickerDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -169,12 +171,12 @@ internal fun DatePickerDialog(
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                         .clickable(onClick = onDismiss)
                         .padding(vertical = 20.dp),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "CANCEL",
                         style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Box(
@@ -194,12 +196,12 @@ internal fun DatePickerDialog(
                             onConfirm(cal.timeInMillis)
                         }
                         .padding(vertical = 20.dp),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "CONFIRM SELECTION",
                         style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -214,7 +216,7 @@ private fun DayGrid(
     selectedYear: Int,
     selectedMonth: Int,
     selectedDay: Int,
-    onDaySelected: (Int) -> Unit,
+    onDaySelected: (Int) -> Unit
 ) {
     // Day-of-week header
     Row(modifier = Modifier.fillMaxWidth()) {
@@ -224,7 +226,7 @@ private fun DayGrid(
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline
             )
         }
     }
@@ -244,11 +246,14 @@ private fun DayGrid(
                         .weight(1f)
                         .aspectRatio(1f)
                         .background(
-                            if (isSelected) MaterialTheme.colorScheme.primary
-                            else Color.Transparent,
+                            if (isSelected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                Color.Transparent
+                            }
                         )
                         .clickable(enabled = isCurrentMonth) { onDaySelected(day) },
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = day.toString(),
@@ -257,7 +262,7 @@ private fun DayGrid(
                             isSelected -> MaterialTheme.colorScheme.onPrimary
                             isCurrentMonth -> MaterialTheme.colorScheme.onSurface
                             else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                        },
+                        }
                     )
                 }
             }
@@ -267,11 +272,7 @@ private fun DayGrid(
 
 @Suppress("MagicNumber")
 @Composable
-private fun YearGrid(
-    yearPageStart: Int,
-    selectedYear: Int,
-    onYearSelected: (Int) -> Unit,
-) {
+private fun YearGrid(yearPageStart: Int, selectedYear: Int, onYearSelected: (Int) -> Unit) {
     val years = (yearPageStart until yearPageStart + 12).toList()
     years.chunked(3).forEach { yearRow ->
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -282,17 +283,23 @@ private fun YearGrid(
                         .weight(1f)
                         .aspectRatio(16f / 9f)
                         .background(
-                            if (isSelected) MaterialTheme.colorScheme.primary
-                            else Color.Transparent,
+                            if (isSelected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                Color.Transparent
+                            }
                         )
                         .clickable { onYearSelected(year) },
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = year.toString(),
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary
-                        else MaterialTheme.colorScheme.onSurface,
+                        color = if (isSelected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
                     )
                 }
             }
@@ -311,16 +318,19 @@ private fun getCalendarDays(year: Int, month: Int): List<Pair<Int, Boolean>> {
 
     val days = mutableListOf<Pair<Int, Boolean>>()
     repeat(firstDayOfWeek) { i -> days.add(daysInPrevMonth - firstDayOfWeek + 1 + i to false) }
-    for (day in 1..daysInMonth) { days.add(day to true) }
+    for (day in 1..daysInMonth) {
+        days.add(day to true)
+    }
     var nextDay = 1
-    while (days.size < 42) { days.add(nextDay++ to false) }
+    while (days.size < 42) {
+        days.add(nextDay++ to false)
+    }
     return days
 }
 
-private fun monthName(month: Int): String =
-    SimpleDateFormat("MMMM", Locale.getDefault()).format(
-        Calendar.getInstance().apply { set(1970, month - 1, 1) }.time,
-    ).uppercase(Locale.getDefault())
+private fun monthName(month: Int): String = SimpleDateFormat("MMMM", Locale.getDefault()).format(
+    Calendar.getInstance().apply { set(1970, month - 1, 1) }.time
+).uppercase(Locale.getDefault())
 
 private fun prevMonth(year: Int, month: Int): Pair<Int, Int> =
     if (month == 1) year - 1 to 12 else year to month - 1

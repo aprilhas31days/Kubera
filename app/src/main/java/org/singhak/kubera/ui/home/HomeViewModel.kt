@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.singhak.kubera.data.TransactionRepository
 import org.singhak.kubera.model.MonthSummary
+import org.singhak.kubera.repository.TransactionRepository
 
 sealed interface BackfillState {
     data object Idle : BackfillState
@@ -21,9 +21,8 @@ sealed interface BackfillState {
 }
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val repository: TransactionRepository
-) : ViewModel() {
+class HomeViewModel @Inject constructor(private val repository: TransactionRepository) :
+    ViewModel() {
 
     val monthSummary = repository.getCurrentMonthSummary()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MonthSummary(0.0, 0))

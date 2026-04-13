@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
             permissionLauncher.launch(
                 arrayOf(
                     Manifest.permission.READ_SMS,
-                    Manifest.permission.RECEIVE_SMS,
+                    Manifest.permission.RECEIVE_SMS
                 )
             )
         }
@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         transactions = transactions,
                         backfillState = backfillState,
                         onGrantAccess = { openAppSettings() },
-                        onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
+                        onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) }
                     )
                 }
             }

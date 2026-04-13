@@ -21,5 +21,5 @@ data class Transaction(
     val timestamp: Long,
     val bank: String,
     val merchant: String? = null,
-    val category: TransactionCategory = OTHER,
+    val category: TransactionCategory = OTHER
 )

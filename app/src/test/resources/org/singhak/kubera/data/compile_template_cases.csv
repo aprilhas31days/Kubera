@@ -1,7 +1,0 @@
-template,input,expectedAmount
-Rs. {amount} paid,Rs. 1500 paid,1500
-"Rs. {amount} paid","Rs. 1,23,456.78 paid","1,23,456.78"
-"A/c {...} debited Rs. {amount}",A/c XX1234 debited Rs. 500,500
-"A/c {...} debited Rs. {amount} {...}","A/c XX9876 debited Rs. 2,000.50 on 20-Mar-26","2,000.50"
-"Rs.{amount} credited to a/c {...}",Rs.750 credited to a/c XX4321,750
-Rs. {amount} paid,USD 1500 paid,

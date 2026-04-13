@@ -11,10 +11,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-import org.singhak.kubera.data.CategoryRuleDao
-import org.singhak.kubera.data.KuberaDatabase
-import org.singhak.kubera.data.TransactionDao
-import org.singhak.kubera.data.seedSystemRules
+import org.singhak.kubera.db.CategoryRuleDao
+import org.singhak.kubera.db.KuberaDatabase
+import org.singhak.kubera.db.TransactionDao
+import org.singhak.kubera.db.seedSystemRules
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,8 +35,7 @@ object AppModule {
             .build()
 
     @Provides
-    fun provideTransactionDao(database: KuberaDatabase): TransactionDao =
-        database.transactionDao()
+    fun provideTransactionDao(database: KuberaDatabase): TransactionDao = database.transactionDao()
 
     @Provides
     fun provideCategoryRuleDao(database: KuberaDatabase): CategoryRuleDao =

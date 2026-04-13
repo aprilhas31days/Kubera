@@ -1,4 +1,4 @@
-package org.singhak.kubera.data
+package org.singhak.kubera.sms
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,6 +9,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.singhak.kubera.repository.TransactionRepository
 
 @AndroidEntryPoint
 class SmsBroadcastReceiver : BroadcastReceiver() {
@@ -21,7 +22,9 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
         val sender = messages.firstOrNull()?.originatingAddress ?: return
 
-        val isRegisteredSender = registeredBanks.any { bank -> sender.contains(bank, ignoreCase = true) }
+        val isRegisteredSender = registeredBanks.any { bank ->
+            sender.contains(bank, ignoreCase = true)
+        }
         if (!isRegisteredSender) return
 
         val body = messages.joinToString("") { it.messageBody }
