@@ -15,6 +15,7 @@ import org.singhak.kubera.db.CategoryRuleDao
 import org.singhak.kubera.db.KuberaDatabase
 import org.singhak.kubera.db.TransactionDao
 import org.singhak.kubera.db.seedSystemRules
+import org.singhak.kubera.sms.SmsParser
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -44,4 +45,9 @@ object AppModule {
     @Provides
     fun provideContentResolver(@ApplicationContext context: Context): ContentResolver =
         context.contentResolver
+
+    @Provides
+    @Singleton
+    fun provideSmsParser(@ApplicationContext context: Context): SmsParser =
+        SmsParser.fromAssets(context)
 }

@@ -32,7 +32,6 @@ import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.model.TransactionType
-import org.singhak.kubera.sms.registeredBanks
 import org.singhak.kubera.ui.theme.Credit
 
 @Composable
@@ -194,23 +193,21 @@ private fun TransactionItem(transaction: Transaction) {
             )
             Column(modifier = Modifier.padding(start = 24.dp)) {
                 Text(
-                    text = transaction.merchant ?: transaction.bank,
+                    text = transaction.merchant ?: transaction.channel.displayName,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Normal
                     ),
                     color = MaterialTheme.colorScheme.primary
                 )
-                val bankTag = remember(transaction.bank) {
-                    registeredBanks.firstOrNull {
-                        transaction.bank.contains(it, ignoreCase = true)
-                    } ?: transaction.bank
-                }
-                val subtitleText = remember(bankTag, transaction.category) {
-                    if (transaction.category != TransactionCategory.OTHER) {
-                        "$bankTag · ${transaction.category.displayName.uppercase()}"
+                val subtitleText = remember(transaction.bank, transaction.account, transaction.channel, transaction.category) {
+                    val accountSuffix = transaction.account?.takeLast(4)?.let { " · $it" } ?: ""
+                    val channelSuffix = " · ${transaction.channel.displayName.uppercase()}"
+                    val categorySuffix = if (transaction.category != TransactionCategory.OTHER) {
+                        " · ${transaction.category.displayName.uppercase()}"
                     } else {
-                        bankTag
+                        ""
                     }
+                    "${transaction.bank.displayName}$accountSuffix$channelSuffix$categorySuffix"
                 }
                 Text(
                     text = subtitleText,

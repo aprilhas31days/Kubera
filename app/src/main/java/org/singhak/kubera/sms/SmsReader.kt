@@ -5,18 +5,17 @@ import android.provider.Telephony
 import javax.inject.Inject
 import org.singhak.kubera.model.Transaction
 
-class SmsReader @Inject constructor(private val contentResolver: ContentResolver) {
+class SmsReader @Inject constructor(
+    private val contentResolver: ContentResolver,
+    private val smsParser: SmsParser,
+) {
     fun readTransactions(afterTimestamp: Long): List<Transaction> {
-        val senderTags = registeredBanks
-        if (senderTags.isEmpty()) return emptyList()
-
-        val likeClauses = senderTags.joinToString(" OR ") {
+        val banks = smsParser.registeredBanks
+        val likeClauses = banks.joinToString(" OR ") {
             "${Telephony.Sms.Inbox.ADDRESS} LIKE ?"
         }
         val selection = "${Telephony.Sms.Inbox.DATE} > ? AND ($likeClauses)"
-        val selectionArgs =
-            arrayOf(afterTimestamp.toString()) + senderTags.map { "%$it%" }.toTypedArray()
-
+        val selectionArgs = arrayOf(afterTimestamp.toString()) + banks.map { "%$it%" }.toTypedArray()
         return querySmsInbox(selection, selectionArgs)
     }
 
@@ -38,12 +37,13 @@ class SmsReader @Inject constructor(private val contentResolver: ContentResolver
             val dateIndex = cursor.getColumnIndexOrThrow(Telephony.Sms.Inbox.DATE)
 
             while (cursor.moveToNext()) {
-                parseSms(cursor.getString(addressIndex), cursor.getString(bodyIndex))
+                val address = cursor.getString(addressIndex)
+                val body = cursor.getString(bodyIndex)
+                smsParser.parse(address, body)
                     ?.copy(timestamp = cursor.getLong(dateIndex))
                     ?.let { transactions.add(it) }
             }
         }
-
         return transactions
     }
 }

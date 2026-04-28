@@ -1,0 +1,26 @@
+{
+  "INDBNK": {
+    "UPI": {
+      "DEBIT": "A/c {account} debited Rs. {amount} {...} to {merchant}.",
+      "CREDIT": "Rs.{amount} credited to a/c {account} {...} by a/c linked to VPA {merchant} ("
+    },
+    "ATM": {
+      "DEBIT": "Rs.{amount} withdrawn from A/c {account} at ATM:{...} on {...}"
+    },
+    "NEFT": {
+      "CREDIT": "Rs. {amount} credited to A/c {account} on {...} UTR:{...}"
+    },
+    "IMPS": {
+      "CREDIT": "Your a/c. {account} is credited by Rs. {amount} on {...} by a/c linked to mobile {...} (IMPS Ref no. {...})."
+    }
+  },
+  "KOTAKB": {
+    "UPI": {
+      "DEBIT": "Sent Rs.{amount} from Kotak Bank AC {account} to {merchant} on {...}.UPI Ref {...}.",
+      "CREDIT": "Received Rs.{amount} in your Kotak Bank AC {account} from {merchant} on {...}.UPI Ref:{...}."
+    },
+    "CREDIT_CARD": {
+      "DEBIT": "INR {amount} spent on Kotak Credit Card {account} on {...} at {merchant}."
+    }
+  }
+}

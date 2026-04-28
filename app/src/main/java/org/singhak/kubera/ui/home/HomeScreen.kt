@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.Bank
+import org.singhak.kubera.model.TransactionChannel
 import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.theme.KuberaTheme
 
@@ -64,32 +66,42 @@ private fun TransactionListPreview() {
         Transaction(
             amount = 1299.00,
             type = TransactionType.DEBIT,
+            channel = TransactionChannel.CREDIT_CARD,
             timestamp = now,
-            bank = "Apple Store"
+            bank = Bank.KOTAKB,
+            merchant = "Apple Store"
         ),
         Transaction(
             amount = 265.00,
             type = TransactionType.DEBIT,
+            channel = TransactionChannel.UPI,
             timestamp = now - 3_600_000,
-            bank = "Equinox Holdings"
+            bank = Bank.INDBNK,
+            merchant = "Equinox Holdings"
         ),
         Transaction(
             amount = 6.50,
             type = TransactionType.DEBIT,
+            channel = TransactionChannel.UPI,
             timestamp = now - 7_200_000,
-            bank = "Blue Bottle Coffee"
+            bank = Bank.INDBNK,
+            merchant = "Blue Bottle Coffee"
         ),
         Transaction(
             amount = 4200.00,
             type = TransactionType.DEBIT,
+            channel = TransactionChannel.UPI,
             timestamp = now - oneDay,
-            bank = "Aman Resorts"
+            bank = Bank.INDBNK,
+            merchant = "Aman Resorts"
         ),
         Transaction(
             amount = 15000.00,
             type = TransactionType.CREDIT,
+            channel = TransactionChannel.NEFT,
             timestamp = now - oneDay * 3,
-            bank = "Salary Credit"
+            bank = Bank.INDBNK,
+            merchant = "Salary Credit"
         )
     )
     KuberaTheme {

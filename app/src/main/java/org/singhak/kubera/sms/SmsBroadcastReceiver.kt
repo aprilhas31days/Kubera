@@ -15,6 +15,7 @@ import org.singhak.kubera.repository.TransactionRepository
 class SmsBroadcastReceiver : BroadcastReceiver() {
 
     @Inject lateinit var repository: TransactionRepository
+    @Inject lateinit var smsParser: SmsParser
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
@@ -22,7 +23,7 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
         val sender = messages.firstOrNull()?.originatingAddress ?: return
 
-        val isRegisteredSender = registeredBanks.any { bank ->
+        val isRegisteredSender = smsParser.registeredBanks.any { bank ->
             sender.contains(bank, ignoreCase = true)
         }
         if (!isRegisteredSender) return
@@ -30,7 +31,7 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
         val body = messages.joinToString("") { it.messageBody }
         val timestamp = messages.first().timestampMillis
 
-        val transaction = parseSms(sender = sender, sms = body)
+        val transaction = smsParser.parse(sender = sender, sms = body)
             ?.copy(timestamp = timestamp) ?: return
 
         val pendingResult = goAsync()
