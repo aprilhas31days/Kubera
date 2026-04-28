@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
             val homeViewModel: HomeViewModel = hiltViewModel()
             val monthSummary by homeViewModel.monthSummary.collectAsState()
             val transactions by homeViewModel.transactions.collectAsState()
+            val categoryBreakdown by homeViewModel.categoryBreakdown.collectAsState()
             val backfillState by homeViewModel.backfillState.collectAsState()
 
             KuberaTheme {
@@ -61,6 +62,7 @@ class MainActivity : ComponentActivity() {
                         hasPermission = smsPermissionGranted,
                         monthSummary = monthSummary,
                         transactions = transactions,
+                        categoryBreakdown = categoryBreakdown,
                         backfillState = backfillState,
                         onGrantAccess = { openAppSettings() },
                         onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) }

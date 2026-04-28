@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import org.singhak.kubera.db.CategoryRuleDao
 import org.singhak.kubera.db.TransactionDao
 import org.singhak.kubera.db.categorize
+import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.sms.SmsReader
@@ -32,6 +33,17 @@ class TransactionRepository @Inject constructor(
     }
 
     fun getAllTransactions(): Flow<List<Transaction>> = transactionDao.getAllTransactions()
+
+    fun getCurrentMonthCategoryBreakdown(): Flow<List<CategorySpend>> {
+        val monthStart = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        return transactionDao.getCategoryBreakdown(monthStart)
+    }
 
     suspend fun backfillFromDate(fromDate: Long): Boolean {
         val rules = categoryRuleDao.getAllRules()

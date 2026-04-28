@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 
@@ -28,4 +29,15 @@ interface TransactionDao {
 
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
     fun getAllTransactions(): Flow<List<Transaction>>
+
+    @Query(
+        """
+        SELECT category, SUM(amount) AS total
+        FROM transactions
+        WHERE timestamp >= :fromTimestamp AND type = 'DEBIT'
+        GROUP BY category
+        ORDER BY total DESC
+    """
+    )
+    fun getCategoryBreakdown(fromTimestamp: Long): Flow<List<CategorySpend>>
 }

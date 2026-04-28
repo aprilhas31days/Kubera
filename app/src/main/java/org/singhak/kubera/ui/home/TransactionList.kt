@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
@@ -37,6 +39,7 @@ import org.singhak.kubera.ui.theme.Credit
 @Composable
 internal fun TransactionList(
     monthSummary: MonthSummary,
+    categoryBreakdown: List<CategorySpend>,
     transactions: List<Transaction>,
     modifier: Modifier = Modifier
 ) {
@@ -52,6 +55,10 @@ internal fun TransactionList(
                 totalExpenditure = monthSummary.totalExpenditure,
                 entryCount = monthSummary.entryCount
             )
+        }
+
+        if (categoryBreakdown.isNotEmpty()) {
+            item { CategoryBreakdownSection(breakdown = categoryBreakdown) }
         }
 
         grouped.forEach { (dateLabel, dayTransactions) ->
@@ -232,6 +239,74 @@ private fun TransactionItem(transaction: Transaction) {
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun CategoryBreakdownSection(breakdown: List<CategorySpend>) {
+    val maxTotal = remember(breakdown) { breakdown.maxOf { it.total } }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 32.dp)
+    ) {
+        Text(
+            text = "BY CATEGORY",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.outline
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        @Suppress("MagicNumber")
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(0.5.dp)
+                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        breakdown.forEach { item ->
+            CategoryBreakdownRow(item = item, fraction = (item.total / maxTotal).toFloat())
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun CategoryBreakdownRow(item: CategorySpend, fraction: Float) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = item.category.displayName.uppercase(Locale.getDefault()),
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "₹${"%, .2f".format(item.total)}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraction)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f))
+            )
         }
     }
 }

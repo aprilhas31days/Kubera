@@ -9,9 +9,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import org.singhak.kubera.model.Bank
+import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
-import org.singhak.kubera.model.Bank
+import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.model.TransactionChannel
 import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.theme.KuberaTheme
@@ -21,6 +23,7 @@ fun HomeScreen(
     hasPermission: Boolean,
     monthSummary: MonthSummary,
     transactions: List<Transaction>?,
+    categoryBreakdown: List<CategorySpend>,
     backfillState: BackfillState,
     onGrantAccess: () -> Unit,
     onBackfillFromDate: (Long) -> Unit,
@@ -38,6 +41,7 @@ fun HomeScreen(
             )
             else -> TransactionList(
                 monthSummary = monthSummary,
+                categoryBreakdown = categoryBreakdown,
                 transactions = transactions
             )
         }
@@ -109,6 +113,12 @@ private fun TransactionListPreview() {
             hasPermission = true,
             monthSummary = MonthSummary(totalExpenditure = 5770.50, entryCount = 5),
             transactions = transactions,
+            categoryBreakdown = listOf(
+                CategorySpend(TransactionCategory.SHOPPING, 1299.00),
+                CategorySpend(TransactionCategory.FOOD, 6.50),
+                CategorySpend(TransactionCategory.TRAVEL, 4200.00),
+                CategorySpend(TransactionCategory.OTHER, 265.00),
+            ),
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
             onBackfillFromDate = {}
@@ -125,6 +135,7 @@ private fun EmptyStatePreview() {
             hasPermission = true,
             monthSummary = MonthSummary(0.0, 0),
             transactions = emptyList(),
+            categoryBreakdown = emptyList(),
             backfillState = BackfillState.NoResults,
             onGrantAccess = {},
             onBackfillFromDate = {}
@@ -141,6 +152,7 @@ private fun NoPermissionPreview() {
             hasPermission = false,
             monthSummary = MonthSummary(0.0, 0),
             transactions = emptyList(),
+            categoryBreakdown = emptyList(),
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
             onBackfillFromDate = {}

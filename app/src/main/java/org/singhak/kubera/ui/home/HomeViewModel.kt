@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.repository.TransactionRepository
 
@@ -29,6 +30,9 @@ class HomeViewModel @Inject constructor(private val repository: TransactionRepos
 
     val transactions = repository.getAllTransactions()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val categoryBreakdown = repository.getCurrentMonthCategoryBreakdown()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _backfillState = MutableStateFlow<BackfillState>(BackfillState.Idle)
     val backfillState: StateFlow<BackfillState> = _backfillState.asStateFlow()
