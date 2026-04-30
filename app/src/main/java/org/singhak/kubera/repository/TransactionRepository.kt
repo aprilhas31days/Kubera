@@ -3,12 +3,15 @@ package org.singhak.kubera.repository
 import java.util.Calendar
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import org.singhak.kubera.db.CategoryRule
 import org.singhak.kubera.db.CategoryRuleDao
+import org.singhak.kubera.db.RuleSource
 import org.singhak.kubera.db.TransactionDao
 import org.singhak.kubera.db.categorize
 import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.sms.SmsReader
 
 class TransactionRepository @Inject constructor(
@@ -43,6 +46,22 @@ class TransactionRepository @Inject constructor(
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
         return transactionDao.getCategoryBreakdown(monthStart)
+    }
+
+    fun getUserRules(): Flow<List<CategoryRule>> = categoryRuleDao.getUserRules()
+
+    suspend fun addUserRule(keyword: String, category: TransactionCategory) {
+        val rule = CategoryRule(keyword = keyword.trim(), category = category, source = RuleSource.USER)
+        categoryRuleDao.insert(rule)
+        transactionDao.recategorizeExact(keyword.trim(), category)
+    }
+
+    suspend fun deleteUserRule(rule: CategoryRule) {
+        categoryRuleDao.delete(rule)
+        val remainingRules = categoryRuleDao.getAllRules()
+        transactionDao.getByMerchantExact(rule.keyword).forEach { txn ->
+            transactionDao.updateCategory(txn.id, categorize(txn.merchant, remainingRules))
+        }
     }
 
     suspend fun backfillFromDate(fromDate: Long): Boolean {

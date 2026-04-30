@@ -22,11 +22,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import org.singhak.kubera.ui.home.HomeScreen
 import org.singhak.kubera.ui.home.HomeViewModel
+import org.singhak.kubera.ui.rules.RulesScreen
+import org.singhak.kubera.ui.rules.RulesViewModel
 import org.singhak.kubera.ui.theme.KuberaTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private var smsPermissionGranted by mutableStateOf(false)
+    private var showRules by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -51,22 +54,34 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val homeViewModel: HomeViewModel = hiltViewModel()
+            val rulesViewModel: RulesViewModel = hiltViewModel()
             val monthSummary by homeViewModel.monthSummary.collectAsState()
             val transactions by homeViewModel.transactions.collectAsState()
             val categoryBreakdown by homeViewModel.categoryBreakdown.collectAsState()
             val backfillState by homeViewModel.backfillState.collectAsState()
+            val userRules by rulesViewModel.userRules.collectAsState()
 
             KuberaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    HomeScreen(
-                        hasPermission = smsPermissionGranted,
-                        monthSummary = monthSummary,
-                        transactions = transactions,
-                        categoryBreakdown = categoryBreakdown,
-                        backfillState = backfillState,
-                        onGrantAccess = { openAppSettings() },
-                        onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) }
-                    )
+                    if (showRules) {
+                        RulesScreen(
+                            rules = userRules,
+                            onBack = { showRules = false },
+                            onAddRule = { keyword, category -> rulesViewModel.addRule(keyword, category) },
+                            onDeleteRule = { rule -> rulesViewModel.deleteRule(rule) }
+                        )
+                    } else {
+                        HomeScreen(
+                            hasPermission = smsPermissionGranted,
+                            monthSummary = monthSummary,
+                            transactions = transactions,
+                            categoryBreakdown = categoryBreakdown,
+                            backfillState = backfillState,
+                            onGrantAccess = { openAppSettings() },
+                            onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
+                            onManageRules = { showRules = true }
+                        )
+                    }
                 }
             }
         }

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionCategory
 
 @Dao
 interface TransactionDao {
@@ -40,4 +41,13 @@ interface TransactionDao {
     """
     )
     fun getCategoryBreakdown(fromTimestamp: Long): Flow<List<CategorySpend>>
+
+    @Query("UPDATE transactions SET category = :category WHERE LOWER(merchant) = LOWER(:keyword)")
+    suspend fun recategorizeExact(keyword: String, category: TransactionCategory)
+
+    @Query("SELECT * FROM transactions WHERE LOWER(merchant) = LOWER(:keyword)")
+    suspend fun getByMerchantExact(keyword: String): List<Transaction>
+
+    @Query("UPDATE transactions SET category = :category WHERE id = :id")
+    suspend fun updateCategory(id: Long, category: TransactionCategory)
 }

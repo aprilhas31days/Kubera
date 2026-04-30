@@ -1,6 +1,7 @@
 package org.singhak.kubera.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ internal fun TransactionList(
     monthSummary: MonthSummary,
     categoryBreakdown: List<CategorySpend>,
     transactions: List<Transaction>,
+    onManageRules: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val grouped = remember(transactions) { groupTransactionsByDate(transactions) }
@@ -53,7 +55,8 @@ internal fun TransactionList(
         item {
             BalanceHeader(
                 totalExpenditure = monthSummary.totalExpenditure,
-                entryCount = monthSummary.entryCount
+                entryCount = monthSummary.entryCount,
+                onManageRules = onManageRules
             )
         }
 
@@ -77,7 +80,7 @@ internal fun TransactionList(
 }
 
 @Composable
-private fun BalanceHeader(totalExpenditure: Double, entryCount: Int) {
+private fun BalanceHeader(totalExpenditure: Double, entryCount: Int, onManageRules: () -> Unit) {
     val monthLabel = remember {
         SimpleDateFormat("MMMM yyyy", Locale.getDefault())
             .format(Date())
@@ -89,11 +92,25 @@ private fun BalanceHeader(totalExpenditure: Double, entryCount: Int) {
             .fillMaxWidth()
             .padding(start = 24.dp, end = 24.dp, top = 64.dp, bottom = 32.dp)
     ) {
-        Text(
-            text = "TOTAL EXPENDITURE",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "TOTAL EXPENDITURE",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline
+            )
+            Text(
+                text = "RULES",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                color = MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier
+                    .clickable { onManageRules() }
+                    .padding(vertical = 4.dp, horizontal = 2.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "\u20B9${"%, .2f".format(totalExpenditure)}",
