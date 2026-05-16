@@ -28,6 +28,7 @@ fun HomeScreen(
     onGrantAccess: () -> Unit,
     onBackfillFromDate: (Long) -> Unit,
     onManageRules: () -> Unit,
+    onTransactionClick: (Transaction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -44,7 +45,8 @@ fun HomeScreen(
                 monthSummary = monthSummary,
                 categoryBreakdown = categoryBreakdown,
                 transactions = transactions,
-                onManageRules = onManageRules
+                onManageRules = onManageRules,
+                onTransactionClick = onTransactionClick,
             )
         }
 
@@ -124,7 +126,8 @@ private fun TransactionListPreview() {
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
             onBackfillFromDate = {},
-            onManageRules = {}
+            onManageRules = {},
+            onTransactionClick = {},
         )
     }
 }
@@ -142,7 +145,8 @@ private fun EmptyStatePreview() {
             backfillState = BackfillState.NoResults,
             onGrantAccess = {},
             onBackfillFromDate = {},
-            onManageRules = {}
+            onManageRules = {},
+            onTransactionClick = {},
         )
     }
 }
@@ -160,7 +164,8 @@ private fun NoPermissionPreview() {
             backfillState = BackfillState.Idle,
             onGrantAccess = {},
             onBackfillFromDate = {},
-            onManageRules = {}
+            onManageRules = {},
+            onTransactionClick = {},
         )
     }
 }

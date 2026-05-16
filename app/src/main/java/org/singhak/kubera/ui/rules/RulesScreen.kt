@@ -1,5 +1,6 @@
 package org.singhak.kubera.ui.rules
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,6 +44,8 @@ fun RulesScreen(
     onDeleteRule: (CategoryRule) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    BackHandler { onBack() }
+
     var showAddDialog by remember { mutableStateOf(false) }
 
     Column(

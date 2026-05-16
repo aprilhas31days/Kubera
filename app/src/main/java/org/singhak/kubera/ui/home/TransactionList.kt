@@ -43,6 +43,7 @@ internal fun TransactionList(
     categoryBreakdown: List<CategorySpend>,
     transactions: List<Transaction>,
     onManageRules: () -> Unit,
+    onTransactionClick: (Transaction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val grouped = remember(transactions) { groupTransactionsByDate(transactions) }
@@ -70,7 +71,7 @@ internal fun TransactionList(
                 .sumOf { it.amount }
             item { DateSectionHeader(label = dateLabel, dailyTotal = dailyTotal) }
             items(dayTransactions, key = { it.hashCode() }) { transaction ->
-                TransactionItem(transaction = transaction)
+                TransactionItem(transaction = transaction, onClick = { onTransactionClick(transaction) })
             }
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
@@ -182,7 +183,7 @@ private fun DateSectionHeader(label: String, dailyTotal: Double) {
 }
 
 @Composable
-private fun TransactionItem(transaction: Transaction) {
+private fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val timeText = if (transaction.timestamp != 0L) {
         timeFormat.format(Date(transaction.timestamp)).uppercase(Locale.getDefault())
@@ -202,6 +203,7 @@ private fun TransactionItem(transaction: Transaction) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

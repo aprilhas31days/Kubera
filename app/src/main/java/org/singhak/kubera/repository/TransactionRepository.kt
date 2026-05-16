@@ -64,6 +64,13 @@ class TransactionRepository @Inject constructor(
         }
     }
 
+    suspend fun updateTransaction(transaction: Transaction, applyRule: Boolean) {
+        transactionDao.update(transaction)
+        if (applyRule && !transaction.merchant.isNullOrBlank()) {
+            addUserRule(transaction.merchant.trim(), transaction.category)
+        }
+    }
+
     suspend fun backfillFromDate(fromDate: Long): Boolean {
         val rules = categoryRuleDao.getAllRules()
         val transactions = smsReader.readTransactions(afterTimestamp = fromDate)

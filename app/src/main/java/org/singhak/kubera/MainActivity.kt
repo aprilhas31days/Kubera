@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.ui.home.EditTransactionScreen
 import org.singhak.kubera.ui.home.HomeScreen
 import org.singhak.kubera.ui.home.HomeViewModel
 import org.singhak.kubera.ui.rules.RulesScreen
@@ -30,6 +32,7 @@ import org.singhak.kubera.ui.theme.KuberaTheme
 class MainActivity : ComponentActivity() {
     private var smsPermissionGranted by mutableStateOf(false)
     private var showRules by mutableStateOf(false)
+    private var selectedTransaction by mutableStateOf<Transaction?>(null)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -63,15 +66,19 @@ class MainActivity : ComponentActivity() {
 
             KuberaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    if (showRules) {
-                        RulesScreen(
+                    val txn = selectedTransaction
+                    when {
+                        txn != null -> EditTransactionScreen(
+                            transaction = txn,
+                            onBack = { selectedTransaction = null },
+                        )
+                        showRules -> RulesScreen(
                             rules = userRules,
                             onBack = { showRules = false },
                             onAddRule = { keyword, category -> rulesViewModel.addRule(keyword, category) },
-                            onDeleteRule = { rule -> rulesViewModel.deleteRule(rule) }
+                            onDeleteRule = { rule -> rulesViewModel.deleteRule(rule) },
                         )
-                    } else {
-                        HomeScreen(
+                        else -> HomeScreen(
                             hasPermission = smsPermissionGranted,
                             monthSummary = monthSummary,
                             transactions = transactions,
@@ -79,7 +86,8 @@ class MainActivity : ComponentActivity() {
                             backfillState = backfillState,
                             onGrantAccess = { openAppSettings() },
                             onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
-                            onManageRules = { showRules = true }
+                            onManageRules = { showRules = true },
+                            onTransactionClick = { selectedTransaction = it },
                         )
                     }
                 }

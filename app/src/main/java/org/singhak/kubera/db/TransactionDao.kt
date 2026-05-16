@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
@@ -50,4 +51,7 @@ interface TransactionDao {
 
     @Query("UPDATE transactions SET category = :category WHERE id = :id")
     suspend fun updateCategory(id: Long, category: TransactionCategory)
+
+    @Update
+    suspend fun update(transaction: Transaction)
 }

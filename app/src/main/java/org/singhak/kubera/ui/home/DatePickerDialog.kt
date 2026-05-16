@@ -36,15 +36,20 @@ private enum class DatePickerMode { DAY, YEAR }
 
 @Suppress("MagicNumber")
 @Composable
-internal fun DatePickerDialog(onDismiss: () -> Unit, onConfirm: (Long) -> Unit) {
-    val today = remember { Calendar.getInstance() }
+internal fun DatePickerDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (Long) -> Unit,
+    initialYear: Int = Calendar.getInstance().get(Calendar.YEAR),
+    initialMonth: Int = Calendar.getInstance().get(Calendar.MONTH) + 1,
+    initialDay: Int = Calendar.getInstance().get(Calendar.DAY_OF_MONTH),
+) {
     var mode by remember { mutableStateOf(DatePickerMode.DAY) }
-    var viewYear by remember { mutableIntStateOf(today.get(Calendar.YEAR)) }
-    var viewMonth by remember { mutableIntStateOf(today.get(Calendar.MONTH) + 1) }
-    var selectedYear by remember { mutableIntStateOf(today.get(Calendar.YEAR)) }
-    var selectedMonth by remember { mutableIntStateOf(today.get(Calendar.MONTH) + 1) }
-    var selectedDay by remember { mutableIntStateOf(today.get(Calendar.DAY_OF_MONTH)) }
-    var yearPageStart by remember { mutableIntStateOf(today.get(Calendar.YEAR) - 5) }
+    var viewYear by remember { mutableIntStateOf(initialYear) }
+    var viewMonth by remember { mutableIntStateOf(initialMonth) }
+    var selectedYear by remember { mutableIntStateOf(initialYear) }
+    var selectedMonth by remember { mutableIntStateOf(initialMonth) }
+    var selectedDay by remember { mutableIntStateOf(initialDay) }
+    var yearPageStart by remember { mutableIntStateOf(initialYear - 5) }
 
     // Scrim — full-screen overlay, tap to dismiss
     Box(
