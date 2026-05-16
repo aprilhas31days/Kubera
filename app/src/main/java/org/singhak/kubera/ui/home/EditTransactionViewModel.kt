@@ -42,6 +42,8 @@ class EditTransactionViewModel @Inject constructor(
     var bank by mutableStateOf(Bank.INDBNK)
     var category by mutableStateOf(TransactionCategory.OTHER)
 
+    val categoryChanged: Boolean get() = originalTransaction?.category != category
+
     private val _saveResult = MutableStateFlow<SaveResult?>(null)
     val saveResult: StateFlow<SaveResult?> = _saveResult.asStateFlow()
 

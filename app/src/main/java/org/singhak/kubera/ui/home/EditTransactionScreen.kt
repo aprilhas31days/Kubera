@@ -197,7 +197,7 @@ fun EditTransactionScreen(
                 .padding(horizontal = 24.dp, vertical = 24.dp)
                 .background(MaterialTheme.colorScheme.primary)
                 .clickable {
-                    if (viewModel.merchant.isNotBlank()) {
+                    if (viewModel.merchant.isNotBlank() && viewModel.categoryChanged) {
                         showRememberDialog = true
                     } else {
                         viewModel.save(false)
