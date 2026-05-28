@@ -7,7 +7,9 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import org.singhak.kubera.model.CategorySpend
+import org.singhak.kubera.model.MerchantSpend
 import org.singhak.kubera.model.MonthSummary
+import org.singhak.kubera.model.MonthlySpend
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
 
@@ -57,4 +59,28 @@ interface TransactionDao {
 
     @Query("SELECT * FROM transactions WHERE timestamp >= :from AND timestamp < :to")
     suspend fun getTransactionsBetween(from: Long, to: Long): List<Transaction>
+
+    @Query(
+        """
+        SELECT strftime('%Y-%m', datetime(timestamp/1000, 'unixepoch', 'localtime')) AS month,
+               SUM(CASE WHEN type = 'DEBIT' THEN amount ELSE 0 END) AS total
+        FROM transactions
+        WHERE timestamp >= :fromTimestamp
+        GROUP BY month
+        ORDER BY month ASC
+    """
+    )
+    fun getMonthlySpend(fromTimestamp: Long): Flow<List<MonthlySpend>>
+
+    @Query(
+        """
+        SELECT merchant, SUM(amount) AS total
+        FROM transactions
+        WHERE timestamp >= :fromTimestamp AND type = 'DEBIT' AND merchant IS NOT NULL
+        GROUP BY LOWER(merchant)
+        ORDER BY total DESC
+        LIMIT :limit
+    """
+    )
+    fun getTopMerchants(fromTimestamp: Long, limit: Int): Flow<List<MerchantSpend>>
 }

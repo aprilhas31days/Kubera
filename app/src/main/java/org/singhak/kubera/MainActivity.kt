@@ -11,7 +11,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -22,6 +25,10 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.ui.AppBottomBar
+import org.singhak.kubera.ui.AppTab
+import org.singhak.kubera.ui.analysis.AnalysisScreen
+import org.singhak.kubera.ui.analysis.AnalysisViewModel
 import org.singhak.kubera.ui.home.EditTransactionScreen
 import org.singhak.kubera.ui.home.HomeScreen
 import org.singhak.kubera.ui.home.HomeViewModel
@@ -32,7 +39,7 @@ import org.singhak.kubera.ui.theme.KuberaTheme
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private var smsPermissionGranted by mutableStateOf(false)
-    private var showRules by mutableStateOf(false)
+    private var selectedTab by mutableStateOf(AppTab.HOME)
     private var selectedTransaction by mutableStateOf<Transaction?>(null)
 
     private val permissionLauncher = registerForActivityResult(
@@ -61,37 +68,59 @@ class MainActivity : ComponentActivity() {
         setContent {
             val homeViewModel: HomeViewModel = hiltViewModel()
             val rulesViewModel: RulesViewModel = hiltViewModel()
+            val analysisViewModel: AnalysisViewModel = hiltViewModel()
+
             val monthSummary by homeViewModel.monthSummary.collectAsState()
             val transactions by homeViewModel.transactions.collectAsState()
             val categoryBreakdown by homeViewModel.categoryBreakdown.collectAsState()
             val backfillState by homeViewModel.backfillState.collectAsState()
             val userRules by rulesViewModel.userRules.collectAsState()
+            val analysisCategoryBreakdown by analysisViewModel.categoryBreakdown.collectAsState()
+            val monthlyTrend by analysisViewModel.monthlyTrend.collectAsState()
+            val topMerchants by analysisViewModel.topMerchants.collectAsState()
 
             KuberaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val txn = selectedTransaction
-                    when {
-                        txn != null -> EditTransactionScreen(
+                    if (txn != null) {
+                        EditTransactionScreen(
                             transaction = txn,
                             onBack = { selectedTransaction = null },
                         )
-                        showRules -> RulesScreen(
-                            rules = userRules,
-                            onBack = { showRules = false },
-                            onAddRule = { keyword, category -> rulesViewModel.addRule(keyword, category) },
-                            onDeleteRule = { rule -> rulesViewModel.deleteRule(rule) },
-                        )
-                        else -> HomeScreen(
-                            hasPermission = smsPermissionGranted,
-                            monthSummary = monthSummary,
-                            transactions = transactions,
-                            categoryBreakdown = categoryBreakdown,
-                            backfillState = backfillState,
-                            onGrantAccess = { openAppSettings() },
-                            onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
-                            onManageRules = { showRules = true },
-                            onTransactionClick = { selectedTransaction = it },
-                        )
+                    } else {
+                        Scaffold(
+                            bottomBar = {
+                                AppBottomBar(
+                                    currentTab = selectedTab,
+                                    onTabSelected = { selectedTab = it }
+                                )
+                            }
+                        ) { innerPadding ->
+                            Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
+                                when (selectedTab) {
+                                    AppTab.HOME -> HomeScreen(
+                                        hasPermission = smsPermissionGranted,
+                                        monthSummary = monthSummary,
+                                        transactions = transactions,
+                                        categoryBreakdown = categoryBreakdown,
+                                        backfillState = backfillState,
+                                        onGrantAccess = { openAppSettings() },
+                                        onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
+                                        onTransactionClick = { selectedTransaction = it },
+                                    )
+                                    AppTab.ANALYSIS -> AnalysisScreen(
+                                        categoryBreakdown = analysisCategoryBreakdown,
+                                        monthlyTrend = monthlyTrend,
+                                        topMerchants = topMerchants,
+                                    )
+                                    AppTab.RULES -> RulesScreen(
+                                        rules = userRules,
+                                        onAddRule = { keyword, category -> rulesViewModel.addRule(keyword, category) },
+                                        onDeleteRule = { rule -> rulesViewModel.deleteRule(rule) },
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

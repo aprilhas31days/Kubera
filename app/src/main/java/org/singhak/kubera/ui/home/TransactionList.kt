@@ -42,7 +42,6 @@ internal fun TransactionList(
     monthSummary: MonthSummary,
     categoryBreakdown: List<CategorySpend>,
     transactions: List<Transaction>,
-    onManageRules: () -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -57,7 +56,6 @@ internal fun TransactionList(
             BalanceHeader(
                 totalExpenditure = monthSummary.totalExpenditure,
                 entryCount = monthSummary.entryCount,
-                onManageRules = onManageRules
             )
         }
 
@@ -81,7 +79,7 @@ internal fun TransactionList(
 }
 
 @Composable
-private fun BalanceHeader(totalExpenditure: Double, entryCount: Int, onManageRules: () -> Unit) {
+private fun BalanceHeader(totalExpenditure: Double, entryCount: Int) {
     val monthLabel = remember {
         SimpleDateFormat("MMMM yyyy", Locale.getDefault())
             .format(Date())
@@ -93,25 +91,11 @@ private fun BalanceHeader(totalExpenditure: Double, entryCount: Int, onManageRul
             .fillMaxWidth()
             .padding(start = 24.dp, end = 24.dp, top = 64.dp, bottom = 32.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "TOTAL EXPENDITURE",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline
-            )
-            Text(
-                text = "RULES",
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
-                color = MaterialTheme.colorScheme.outlineVariant,
-                modifier = Modifier
-                    .clickable { onManageRules() }
-                    .padding(vertical = 4.dp, horizontal = 2.dp)
-            )
-        }
+        Text(
+            text = "TOTAL EXPENDITURE",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.outline
+        )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "\u20B9${"%, .2f".format(totalExpenditure)}",

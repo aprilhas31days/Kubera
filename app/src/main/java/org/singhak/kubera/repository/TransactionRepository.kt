@@ -9,7 +9,9 @@ import org.singhak.kubera.db.RuleSource
 import org.singhak.kubera.db.TransactionDao
 import org.singhak.kubera.db.categorize
 import org.singhak.kubera.model.CategorySpend
+import org.singhak.kubera.model.MerchantSpend
 import org.singhak.kubera.model.MonthSummary
+import org.singhak.kubera.model.MonthlySpend
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.sms.SmsReader
@@ -70,6 +72,12 @@ class TransactionRepository @Inject constructor(
             addUserRule(transaction.merchant.trim(), transaction.category)
         }
     }
+
+    fun getMonthlySpend(fromTimestamp: Long): Flow<List<MonthlySpend>> =
+        transactionDao.getMonthlySpend(fromTimestamp)
+
+    fun getTopMerchants(fromTimestamp: Long, limit: Int = 5): Flow<List<MerchantSpend>> =
+        transactionDao.getTopMerchants(fromTimestamp, limit)
 
     suspend fun backfillFromDate(fromDate: Long): Boolean {
         val rules = categoryRuleDao.getAllRules()
