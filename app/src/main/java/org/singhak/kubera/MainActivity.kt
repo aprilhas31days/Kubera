@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -47,12 +48,14 @@ class MainActivity : ComponentActivity() {
         if (hasSmsPermission()) {
             smsPermissionGranted = true
         } else {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.READ_SMS,
-                    Manifest.permission.RECEIVE_SMS
-                )
+            val permissions = mutableListOf(
+                Manifest.permission.READ_SMS,
+                Manifest.permission.RECEIVE_SMS,
             )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            permissionLauncher.launch(permissions.toTypedArray())
         }
 
         setContent {
