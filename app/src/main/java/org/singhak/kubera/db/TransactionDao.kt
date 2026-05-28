@@ -60,6 +60,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE timestamp >= :from AND timestamp < :to")
     suspend fun getTransactionsBetween(from: Long, to: Long): List<Transaction>
 
+    @Query("SELECT * FROM transactions WHERE timestamp >= :from ORDER BY timestamp DESC")
+    fun getTransactionsSince(from: Long): Flow<List<Transaction>>
+
     @Query(
         """
         SELECT strftime('%Y-%m', datetime(timestamp/1000, 'unixepoch', 'localtime')) AS month,

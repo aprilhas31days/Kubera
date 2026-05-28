@@ -29,6 +29,7 @@ import org.singhak.kubera.ui.AppBottomBar
 import org.singhak.kubera.ui.AppTab
 import org.singhak.kubera.ui.analysis.AnalysisScreen
 import org.singhak.kubera.ui.analysis.AnalysisViewModel
+import org.singhak.kubera.ui.circle.CircleScreen
 import org.singhak.kubera.ui.home.EditTransactionScreen
 import org.singhak.kubera.ui.home.HomeScreen
 import org.singhak.kubera.ui.home.HomeViewModel
@@ -113,6 +114,7 @@ class MainActivity : ComponentActivity() {
                                         monthlyTrend = monthlyTrend,
                                         topMerchants = topMerchants,
                                     )
+                                    AppTab.CIRCLE -> CircleScreen()
                                     AppTab.RULES -> RulesScreen(
                                         rules = userRules,
                                         onAddRule = { keyword, category -> rulesViewModel.addRule(keyword, category) },

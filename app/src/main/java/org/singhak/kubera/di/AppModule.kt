@@ -13,6 +13,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.singhak.kubera.db.CategoryRuleDao
 import org.singhak.kubera.db.KuberaDatabase
+import org.singhak.kubera.db.PersonDao
 import org.singhak.kubera.db.TransactionDao
 import org.singhak.kubera.db.seedSystemRules
 import org.singhak.kubera.sms.SmsParser
@@ -28,6 +29,7 @@ object AppModule {
             KuberaDatabase::class.java,
             "kubera.db"
         )
+            .addMigrations(KuberaDatabase.MIGRATION_1_2)
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     seedSystemRules(db)
@@ -41,6 +43,9 @@ object AppModule {
     @Provides
     fun provideCategoryRuleDao(database: KuberaDatabase): CategoryRuleDao =
         database.categoryRuleDao()
+
+    @Provides
+    fun providePersonDao(database: KuberaDatabase): PersonDao = database.personDao()
 
     @Provides
     fun provideContentResolver(@ApplicationContext context: Context): ContentResolver =

@@ -41,11 +41,13 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import org.singhak.kubera.db.Person
 import org.singhak.kubera.model.Bank
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.model.TransactionChannel
 import org.singhak.kubera.model.TransactionType
+import org.singhak.kubera.ui.circle.CircleViewModel
 
 @Suppress("LongMethod")
 @Composable
@@ -53,15 +55,19 @@ fun EditTransactionScreen(
     transaction: Transaction,
     onBack: () -> Unit,
     viewModel: EditTransactionViewModel = hiltViewModel(),
+    circleViewModel: CircleViewModel = hiltViewModel(),
 ) {
     BackHandler { onBack() }
 
     LaunchedEffect(transaction.id) { viewModel.load(transaction) }
 
     val saveResult by viewModel.saveResult.collectAsState()
+    val circlePeople by circleViewModel.people.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showRememberDialog by remember { mutableStateOf(false) }
+    var showAddToCircleDialog by remember { mutableStateOf(false) }
+    var showNewPersonDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveResult) {
         if (saveResult is SaveResult.Success) onBack()
@@ -212,6 +218,24 @@ fun EditTransactionScreen(
                 color = MaterialTheme.colorScheme.onPrimary,
             )
         }
+
+        if (viewModel.merchant.isNotBlank()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 16.dp)
+                    .clickable { showAddToCircleDialog = true }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "ADD TO CIRCLE",
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+            }
+        }
     }
 
     if (showDatePicker) {
@@ -235,6 +259,33 @@ fun EditTransactionScreen(
             onConfirm = { hour, minute ->
                 showTimePicker = false
                 viewModel.updateTime(hour, minute)
+            },
+        )
+    }
+
+    if (showAddToCircleDialog) {
+        AddToCircleDialog(
+            merchant = viewModel.merchant,
+            people = circlePeople,
+            onDismiss = { showAddToCircleDialog = false },
+            onAddToExisting = { person ->
+                showAddToCircleDialog = false
+                circleViewModel.addIdentifier(person.id, viewModel.merchant)
+            },
+            onNewPerson = {
+                showAddToCircleDialog = false
+                showNewPersonDialog = true
+            },
+        )
+    }
+
+    if (showNewPersonDialog) {
+        NewPersonForCircleDialog(
+            merchant = viewModel.merchant,
+            onDismiss = { showNewPersonDialog = false },
+            onConfirm = { name ->
+                showNewPersonDialog = false
+                circleViewModel.addPersonWithIdentifier(name, viewModel.merchant)
             },
         )
     }
@@ -389,6 +440,108 @@ private fun CategoryGrid(selected: TransactionCategory, onSelect: (TransactionCa
             }
         }
     }
+}
+
+@Composable
+private fun AddToCircleDialog(
+    merchant: String,
+    people: List<Person>,
+    onDismiss: () -> Unit,
+    onAddToExisting: (Person) -> Unit,
+    onNewPerson: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "ADD TO CIRCLE",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = merchant.uppercase(Locale.getDefault()),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+                people.forEach { person ->
+                    Text(
+                        text = person.name.uppercase(Locale.getDefault()),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onAddToExisting(person) }
+                            .padding(vertical = 10.dp),
+                    )
+                }
+                Text(
+                    text = "+ NEW PERSON",
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.5.sp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    modifier = Modifier
+                        .clickable { onNewPerson() }
+                        .padding(vertical = 10.dp),
+                )
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("CANCEL", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp))
+            }
+        },
+    )
+}
+
+@Composable
+private fun NewPersonForCircleDialog(
+    merchant: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var name by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "NEW PERSON",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "${merchant.uppercase(Locale.getDefault())} will be added as an identifier.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+                androidx.compose.material3.OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("NAME", style = MaterialTheme.typography.labelSmall) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { if (name.isNotBlank()) onConfirm(name) },
+                enabled = name.isNotBlank(),
+            ) {
+                Text("ADD", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("CANCEL", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp))
+            }
+        },
+    )
 }
 
 @Composable
