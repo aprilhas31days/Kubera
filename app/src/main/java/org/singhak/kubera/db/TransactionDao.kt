@@ -54,4 +54,7 @@ interface TransactionDao {
 
     @Update
     suspend fun update(transaction: Transaction)
+
+    @Query("SELECT * FROM transactions WHERE timestamp >= :from AND timestamp < :to")
+    suspend fun getTransactionsBetween(from: Long, to: Long): List<Transaction>
 }
