@@ -44,6 +44,7 @@ internal fun TransactionList(
     transactions: List<Transaction>,
     onTransactionClick: (Transaction) -> Unit,
     onAddTransaction: () -> Unit,
+    onViewAll: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val grouped = remember(transactions) { groupTransactionsByDate(transactions) }
@@ -76,7 +77,7 @@ internal fun TransactionList(
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
 
-        item { LedgerFooter() }
+        item { if (onViewAll != null) ViewAllFooter(onViewAll) else LedgerFooter() }
     }
 }
 
@@ -146,7 +147,7 @@ private fun BalanceHeader(totalExpenditure: Double, entryCount: Int, onAddTransa
 }
 
 @Composable
-private fun DateSectionHeader(label: String, dailyTotal: Double) {
+internal fun DateSectionHeader(label: String, dailyTotal: Double) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -183,7 +184,7 @@ private fun DateSectionHeader(label: String, dailyTotal: Double) {
 }
 
 @Composable
-private fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
+internal fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val timeText = if (transaction.timestamp != 0L) {
         timeFormat.format(Date(transaction.timestamp)).uppercase(Locale.getDefault())
@@ -331,6 +332,25 @@ private fun CategoryBreakdownRow(item: CategorySpend, fraction: Float) {
 }
 
 @Composable
+private fun ViewAllFooter(onViewAll: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = "VIEW ALL ENTRIES →",
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+            color = MaterialTheme.colorScheme.outlineVariant,
+            modifier = Modifier
+                .clickable { onViewAll() }
+                .padding(vertical = 8.dp, horizontal = 4.dp),
+        )
+    }
+}
+
+@Composable
 private fun LedgerFooter() {
     Column(
         modifier = Modifier
@@ -353,7 +373,7 @@ private fun LedgerFooter() {
     }
 }
 
-private fun groupTransactionsByDate(
+internal fun groupTransactionsByDate(
     transactions: List<Transaction>
 ): List<Pair<String, List<Transaction>>> {
     val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())

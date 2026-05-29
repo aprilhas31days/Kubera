@@ -18,6 +18,8 @@ import org.singhak.kubera.model.TransactionChannel
 import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.theme.KuberaTheme
 
+private const val LEDGER_PREVIEW_LIMIT = 5
+
 @Composable
 fun HomeScreen(
     hasPermission: Boolean,
@@ -29,6 +31,7 @@ fun HomeScreen(
     onBackfillFromDate: (Long) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
     onAddTransaction: () -> Unit,
+    onViewAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -45,9 +48,10 @@ fun HomeScreen(
             else -> TransactionList(
                 monthSummary = monthSummary,
                 categoryBreakdown = categoryBreakdown,
-                transactions = transactions,
+                transactions = transactions.take(LEDGER_PREVIEW_LIMIT),
                 onTransactionClick = onTransactionClick,
                 onAddTransaction = onAddTransaction,
+                onViewAll = onViewAll,
             )
         }
 
@@ -129,6 +133,7 @@ private fun TransactionListPreview() {
             onBackfillFromDate = {},
             onTransactionClick = {},
             onAddTransaction = {},
+            onViewAll = {},
         )
     }
 }
@@ -148,6 +153,7 @@ private fun EmptyStatePreview() {
             onBackfillFromDate = {},
             onTransactionClick = {},
             onAddTransaction = {},
+            onViewAll = {},
         )
     }
 }
@@ -167,6 +173,7 @@ private fun NoPermissionPreview() {
             onBackfillFromDate = {},
             onTransactionClick = {},
             onAddTransaction = {},
+            onViewAll = {},
         )
     }
 }

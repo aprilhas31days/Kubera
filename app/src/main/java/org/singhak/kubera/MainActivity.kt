@@ -33,6 +33,7 @@ import org.singhak.kubera.ui.AppTab
 import org.singhak.kubera.ui.analysis.AnalysisScreen
 import org.singhak.kubera.ui.analysis.AnalysisViewModel
 import org.singhak.kubera.ui.circle.CircleScreen
+import org.singhak.kubera.ui.home.AllTransactionsScreen
 import org.singhak.kubera.ui.home.EditTransactionScreen
 import org.singhak.kubera.ui.home.HomeScreen
 import org.singhak.kubera.ui.home.HomeViewModel
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
     private var smsPermissionGranted by mutableStateOf(false)
     private var selectedTab by mutableStateOf(AppTab.HOME)
     private var selectedTransaction by mutableStateOf<Transaction?>(null)
+    private var showAllTransactions by mutableStateOf(false)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -91,6 +93,11 @@ class MainActivity : ComponentActivity() {
                             transaction = txn,
                             onBack = { selectedTransaction = null },
                         )
+                    } else if (showAllTransactions) {
+                        AllTransactionsScreen(
+                            onBack = { showAllTransactions = false },
+                            onTransactionClick = { selectedTransaction = it },
+                        )
                     } else {
                         Scaffold(
                             bottomBar = {
@@ -111,6 +118,7 @@ class MainActivity : ComponentActivity() {
                                         onGrantAccess = { openAppSettings() },
                                         onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
                                         onTransactionClick = { selectedTransaction = it },
+                                        onViewAll = { showAllTransactions = true },
                                         onAddTransaction = {
                                             selectedTransaction = Transaction(
                                                 amount = 0.0,
