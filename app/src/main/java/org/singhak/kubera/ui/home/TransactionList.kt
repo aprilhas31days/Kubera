@@ -43,6 +43,7 @@ internal fun TransactionList(
     categoryBreakdown: List<CategorySpend>,
     transactions: List<Transaction>,
     onTransactionClick: (Transaction) -> Unit,
+    onAddTransaction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val grouped = remember(transactions) { groupTransactionsByDate(transactions) }
@@ -56,6 +57,7 @@ internal fun TransactionList(
             BalanceHeader(
                 totalExpenditure = monthSummary.totalExpenditure,
                 entryCount = monthSummary.entryCount,
+                onAddTransaction = onAddTransaction,
             )
         }
 
@@ -79,7 +81,7 @@ internal fun TransactionList(
 }
 
 @Composable
-private fun BalanceHeader(totalExpenditure: Double, entryCount: Int) {
+private fun BalanceHeader(totalExpenditure: Double, entryCount: Int, onAddTransaction: () -> Unit) {
     val monthLabel = remember {
         SimpleDateFormat("MMMM yyyy", Locale.getDefault())
             .format(Date())
@@ -107,23 +109,37 @@ private fun BalanceHeader(totalExpenditure: Double, entryCount: Int) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = monthLabel,
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Text(
+                    text = "\u2022",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Text(
+                    text = "$entryCount ENTRIES",
+                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
             Text(
-                text = monthLabel,
+                text = "+ ADD",
                 style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.outline
-            )
-            Text(
-                text = "\u2022",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline
-            )
-            Text(
-                text = "$entryCount ENTRIES",
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.outline
+                color = MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier
+                    .clickable { onAddTransaction() }
+                    .padding(vertical = 4.dp, horizontal = 2.dp),
             )
         }
     }

@@ -18,7 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-internal fun EmptyStateScreen(backfillState: BackfillState, onLoadFromSms: () -> Unit) {
+internal fun EmptyStateScreen(
+    backfillState: BackfillState,
+    onLoadFromSms: () -> Unit,
+    onAddManually: () -> Unit,
+) {
     val isLoading = backfillState is BackfillState.Loading
 
     Column(
@@ -63,5 +67,14 @@ internal fun EmptyStateScreen(backfillState: BackfillState, onLoadFromSms: () ->
                 color = MaterialTheme.colorScheme.onPrimary
             )
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "ADD MANUALLY",
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+            color = MaterialTheme.colorScheme.outlineVariant,
+            modifier = Modifier
+                .clickable { onAddManually() }
+                .padding(vertical = 12.dp),
+        )
     }
 }

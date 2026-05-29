@@ -48,10 +48,10 @@ class EditTransactionViewModel @Inject constructor(
     val saveResult: StateFlow<SaveResult?> = _saveResult.asStateFlow()
 
     fun load(transaction: Transaction) {
-        if (originalTransaction?.id == transaction.id) return
+        if (transaction.id != 0L && originalTransaction?.id == transaction.id) return
         originalTransaction = transaction
         merchant = transaction.merchant ?: ""
-        amount = "%.2f".format(transaction.amount)
+        amount = if (transaction.id == 0L) "" else "%.2f".format(transaction.amount)
         type = transaction.type
         channel = transaction.channel
         account = transaction.account ?: ""
@@ -94,7 +94,11 @@ class EditTransactionViewModel @Inject constructor(
         )
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.updateTransaction(edited, applyRule)
+                if (orig.id == 0L) {
+                    repository.insertManual(edited, applyRule)
+                } else {
+                    repository.updateTransaction(edited, applyRule)
+                }
                 _saveResult.value = SaveResult.Success
             } catch (e: SQLiteConstraintException) {
                 _saveResult.value = SaveResult.DuplicateError

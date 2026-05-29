@@ -28,6 +28,7 @@ fun HomeScreen(
     onGrantAccess: () -> Unit,
     onBackfillFromDate: (Long) -> Unit,
     onTransactionClick: (Transaction) -> Unit,
+    onAddTransaction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -38,13 +39,15 @@ fun HomeScreen(
             transactions == null -> Unit
             transactions.isEmpty() -> EmptyStateScreen(
                 backfillState = backfillState,
-                onLoadFromSms = { showDatePicker = true }
+                onLoadFromSms = { showDatePicker = true },
+                onAddManually = onAddTransaction,
             )
             else -> TransactionList(
                 monthSummary = monthSummary,
                 categoryBreakdown = categoryBreakdown,
                 transactions = transactions,
                 onTransactionClick = onTransactionClick,
+                onAddTransaction = onAddTransaction,
             )
         }
 
@@ -125,6 +128,7 @@ private fun TransactionListPreview() {
             onGrantAccess = {},
             onBackfillFromDate = {},
             onTransactionClick = {},
+            onAddTransaction = {},
         )
     }
 }
@@ -143,6 +147,7 @@ private fun EmptyStatePreview() {
             onGrantAccess = {},
             onBackfillFromDate = {},
             onTransactionClick = {},
+            onAddTransaction = {},
         )
     }
 }
@@ -161,6 +166,7 @@ private fun NoPermissionPreview() {
             onGrantAccess = {},
             onBackfillFromDate = {},
             onTransactionClick = {},
+            onAddTransaction = {},
         )
     }
 }

@@ -24,7 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import org.singhak.kubera.model.Bank
 import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionChannel
+import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.AppBottomBar
 import org.singhak.kubera.ui.AppTab
 import org.singhak.kubera.ui.analysis.AnalysisScreen
@@ -108,6 +111,15 @@ class MainActivity : ComponentActivity() {
                                         onGrantAccess = { openAppSettings() },
                                         onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
                                         onTransactionClick = { selectedTransaction = it },
+                                        onAddTransaction = {
+                                            selectedTransaction = Transaction(
+                                                amount = 0.0,
+                                                type = TransactionType.DEBIT,
+                                                channel = TransactionChannel.UPI,
+                                                timestamp = System.currentTimeMillis(),
+                                                bank = Bank.INDBNK,
+                                            )
+                                        },
                                     )
                                     AppTab.ANALYSIS -> AnalysisScreen(
                                         categoryBreakdown = analysisCategoryBreakdown,

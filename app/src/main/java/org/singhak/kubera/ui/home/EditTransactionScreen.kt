@@ -57,6 +57,8 @@ fun EditTransactionScreen(
     viewModel: EditTransactionViewModel = hiltViewModel(),
     circleViewModel: CircleViewModel = hiltViewModel(),
 ) {
+    val isNew = transaction.id == 0L
+
     BackHandler { onBack() }
 
     LaunchedEffect(transaction.id) { viewModel.load(transaction) }
@@ -86,7 +88,7 @@ fun EditTransactionScreen(
             .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding(),
     ) {
-        ScreenHeader(onBack = onBack)
+        ScreenHeader(onBack = onBack, isNew = isNew)
 
         Column(
             modifier = Modifier
@@ -334,7 +336,7 @@ fun EditTransactionScreen(
 }
 
 @Composable
-private fun ScreenHeader(onBack: () -> Unit) {
+private fun ScreenHeader(onBack: () -> Unit, isNew: Boolean = false) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -343,7 +345,7 @@ private fun ScreenHeader(onBack: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "EDIT TRANSACTION",
+            text = if (isNew) "ADD TRANSACTION" else "EDIT TRANSACTION",
             style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
             color = MaterialTheme.colorScheme.outline,
         )

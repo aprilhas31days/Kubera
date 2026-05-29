@@ -73,6 +73,13 @@ class TransactionRepository @Inject constructor(
         }
     }
 
+    suspend fun insertManual(transaction: Transaction, applyRule: Boolean) {
+        transactionDao.insert(transaction)
+        if (applyRule && !transaction.merchant.isNullOrBlank()) {
+            addUserRule(transaction.merchant.trim(), transaction.category)
+        }
+    }
+
     fun getMonthlySpend(fromTimestamp: Long): Flow<List<MonthlySpend>> =
         transactionDao.getMonthlySpend(fromTimestamp)
 
