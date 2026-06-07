@@ -8,48 +8,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 
 private val KuberaColorScheme = darkColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSurfaceVariant,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    error = Error,
-    errorContainer = ErrorContainer,
-    onError = OnError,
-    onErrorContainer = Error,
-    background = SurfaceContainerLowest,
-    onBackground = OnSurface,
-    surface = Surface,
-    onSurface = OnSurface,
-    surfaceVariant = SurfaceContainerHighest,
-    onSurfaceVariant = OnSurfaceVariant,
-    outline = Outline,
-    outlineVariant = OutlineVariant,
-    inverseSurface = InverseSurface,
-    inverseOnSurface = InverseOnSurface,
-    inversePrimary = InversePrimary,
-    surfaceDim = SurfaceDim,
-    surfaceBright = SurfaceBright,
-    surfaceContainerLowest = SurfaceContainerLowest,
-    surfaceContainerLow = SurfaceContainerLow,
-    surfaceContainer = SurfaceContainer,
-    surfaceContainerHigh = SurfaceContainerHigh,
-    surfaceContainerHighest = SurfaceContainerHighest
+    background = BgColor,
+    surface = CardColor,
+    surfaceVariant = SubtleColor,
+    surfaceContainerLow = SubtleColor,
+    surfaceContainerLowest = BgColor,
+    onBackground = TextPrimary,
+    onSurface = TextPrimary,
+    onSurfaceVariant = TextSecondary,
+    primary = TextPrimary,
+    onPrimary = BgColor,
+    outline = TextSecondary,
+    outlineVariant = BorderColor,
+    error = RedColor,
+    onError = BgColor,
 )
 
-// "Embrace Sharp Edges" — 0px radius everywhere
 private val KuberaShapes = Shapes(
-    extraSmall = RoundedCornerShape(0.dp),
-    small = RoundedCornerShape(0.dp),
-    medium = RoundedCornerShape(0.dp),
-    large = RoundedCornerShape(0.dp),
-    extraLarge = RoundedCornerShape(0.dp)
+    extraSmall = RoundedCornerShape(20.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    extraLarge = RoundedCornerShape(20.dp),
 )
 
 @Composable

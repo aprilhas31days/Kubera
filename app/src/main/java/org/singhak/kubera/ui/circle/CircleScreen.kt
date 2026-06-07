@@ -1,6 +1,7 @@
 package org.singhak.kubera.ui.circle
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,9 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -27,103 +31,54 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import org.singhak.kubera.db.Person
 import org.singhak.kubera.db.PersonIdentifier
 import org.singhak.kubera.model.PersonSummary
-import org.singhak.kubera.ui.theme.Credit
+import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionType
+import org.singhak.kubera.ui.home.TxnRow
+import org.singhak.kubera.ui.theme.GreenColor
+import org.singhak.kubera.ui.theme.RedColor
 
 @Suppress("LongMethod")
 @Composable
 fun CircleScreen(
+    onTransactionClick: (Transaction) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: CircleViewModel = hiltViewModel(),
 ) {
     val summaries by viewModel.personSummaries.collectAsState()
-    val selectedFilter by viewModel.selectedFilter.collectAsState()
-
+    var selected by remember { mutableStateOf<PersonSummary?>(null) }
     var showAddPersonDialog by remember { mutableStateOf(false) }
     var addIdentifierTarget by remember { mutableStateOf<Person?>(null) }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding(),
-    ) {
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 24.dp)
-            ) {
-                Text(
-                    text = "MY CIRCLE",
-                    style = MaterialTheme.typography.displayLarge.copy(
-                        fontWeight = FontWeight.Normal,
-                        letterSpacing = (-1.5).sp,
-                    ),
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PeriodFilter.entries.forEach { filter ->
-                        val selected = filter == selectedFilter
-                        Text(
-                            text = filter.label,
-                            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
-                            color = if (selected) MaterialTheme.colorScheme.background
-                                    else MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .background(
-                                    if (selected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surface
-                                )
-                                .clickable { viewModel.setFilter(filter) }
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
-                        )
-                    }
-                }
-            }
-        }
-
-        if (summaries.isEmpty()) {
-            item {
-                Text(
-                    text = "No one in your circle yet. Add a person to start tracking.",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
-                    color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                )
-            }
-        } else {
-            items(summaries, key = { it.person.id }) { summary ->
-                PersonSection(
-                    summary = summary,
-                    onDeletePerson = { viewModel.deletePerson(summary.person) },
-                    onDeleteIdentifier = { viewModel.deleteIdentifier(it) },
-                    onAddIdentifier = { addIdentifierTarget = summary.person },
-                )
-            }
-        }
-
-        item {
-            Text(
-                text = "+ ADD PERSON",
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .clickable { showAddPersonDialog = true }
-                    .padding(horizontal = 24.dp, vertical = 24.dp),
-            )
-        }
-
-        item { Spacer(modifier = Modifier.height(32.dp)) }
+    if (selected != null) {
+        val summary = summaries.find { it.person.id == selected!!.person.id } ?: selected!!
+        CircleDetailScreen(
+            summary = summary,
+            onBack = { selected = null },
+            onTransactionClick = onTransactionClick,
+            onAddIdentifier = { addIdentifierTarget = summary.person },
+            onDeleteIdentifier = { viewModel.deleteIdentifier(it) },
+        )
+    } else {
+        CircleListScreen(
+            summaries = summaries,
+            onSelectSummary = { selected = it },
+            onAddPerson = { showAddPersonDialog = true },
+            modifier = modifier,
+        )
     }
 
     if (showAddPersonDialog) {
@@ -148,141 +103,338 @@ fun CircleScreen(
     }
 }
 
-@Suppress("LongMethod")
 @Composable
-private fun PersonSection(
-    summary: PersonSummary,
-    onDeletePerson: () -> Unit,
-    onDeleteIdentifier: (PersonIdentifier) -> Unit,
-    onAddIdentifier: () -> Unit,
+private fun CircleListScreen(
+    summaries: List<PersonSummary>,
+    onSelectSummary: (PersonSummary) -> Unit,
+    onAddPerson: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp),
+    val dateFormat = remember { SimpleDateFormat("d MMM", Locale.getDefault()) }
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding(),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        item {
             Text(
-                text = summary.person.name.uppercase(Locale.getDefault()),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Normal,
-                    letterSpacing = 1.sp,
-                ),
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = "×",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier
-                    .clickable { onDeletePerson() }
-                    .padding(8.dp),
+                text = "Circles",
+                fontSize = 16.sp,
+                fontWeight = FontWeight(600),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 24.dp),
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        AmountsRow(summary = summary)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(0.5.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        summary.identifiers.forEach { identifier ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+        if (summaries.isEmpty()) {
+            item {
                 Text(
-                    text = identifier.identifier,
+                    text = "No one in your circle yet.",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = "×",
-                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                )
+            }
+        } else {
+            items(summaries, key = { it.person.id }) { summary ->
+                val lastTxnDate = summary.transactions.firstOrNull()?.let {
+                    dateFormat.format(Date(it.timestamp))
+                }
+                val netColor = if (summary.net >= 0) GreenColor else RedColor
+                val netText = "₹${"%, .0f".format(kotlin.math.abs(summary.net))}"
+
+                Row(
                     modifier = Modifier
-                        .clickable { onDeleteIdentifier(identifier) }
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                        .fillMaxWidth()
+                        .clickable { onSelectSummary(summary) }
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = summary.person.name.first().uppercase(),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(600),
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = summary.person.name,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight(600),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(Modifier.height(3.dp))
+                        val idCount = summary.identifiers.size
+                        val idLabel = if (idCount == 1) "UPI ID" else "UPI IDs"
+                        val subtitle = "$idCount $idLabel" + if (lastTxnDate != null) " · Last $lastTxnDate" else ""
+                        Text(
+                            text = subtitle,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = netText,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(700),
+                            color = netColor,
+                        )
+                        Text(
+                            text = "›",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(0.5.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
                 )
             }
         }
 
-        Text(
-            text = "+ ADD IDENTIFIER",
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.5.sp),
-            color = MaterialTheme.colorScheme.outlineVariant,
-            modifier = Modifier
-                .clickable { onAddIdentifier() }
-                .padding(vertical = 8.dp),
-        )
+        item {
+            Text(
+                text = "+ ADD PERSON",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clickable { onAddPerson() }
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+            )
+        }
+
+        item { Spacer(modifier = Modifier.height(32.dp)) }
     }
 }
 
+@Suppress("LongMethod")
 @Composable
-private fun AmountsRow(summary: PersonSummary) {
-    val netColor = if (summary.net >= 0) Credit else MaterialTheme.colorScheme.primary
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        AmountLine(label = "SENT", amount = summary.sent, color = MaterialTheme.colorScheme.primary)
-        AmountLine(label = "RECEIVED", amount = summary.received, color = Credit)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(0.5.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f))
-        )
-        AmountLine(
-            label = "NET",
-            amount = summary.net,
-            color = netColor,
-            signed = true,
-        )
-    }
-}
-
-@Composable
-private fun AmountLine(
-    label: String,
-    amount: Double,
-    color: androidx.compose.ui.graphics.Color,
-    signed: Boolean = false,
+private fun CircleDetailScreen(
+    summary: PersonSummary,
+    onBack: () -> Unit,
+    onTransactionClick: (Transaction) -> Unit,
+    onAddIdentifier: () -> Unit,
+    onDeleteIdentifier: (PersonIdentifier) -> Unit,
 ) {
-    val amountText = if (signed && amount > 0) {
-        "+ ₹${"%, .2f".format(amount)}"
-    } else {
-        "₹${"%, .2f".format(amount)}"
+    val monthFormat = remember { SimpleDateFormat("MMMM yyyy", Locale.getDefault()) }
+    val grouped = remember(summary.transactions) {
+        summary.transactions.groupBy { monthFormat.format(Date(it.timestamp)) }
     }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding(),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
-            color = MaterialTheme.colorScheme.outline,
-        )
-        Text(
-            text = amountText,
-            style = MaterialTheme.typography.labelSmall,
-            color = color,
-        )
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Text(
+                    text = "‹",
+                    fontSize = 22.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.clickable { onBack() }.padding(4.dp),
+                )
+                Text(
+                    text = summary.person.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(600),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                listOf(
+                    Triple("YOU PAID", summary.sent, RedColor),
+                    Triple("RECEIVED", summary.received, GreenColor),
+                ).forEach { (label, amount, color) ->
+                    Column(modifier = Modifier.weight(1f)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(2.dp)
+                                .background(color),
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = label,
+                            fontSize = 10.sp,
+                            letterSpacing = 2.sp,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        Text(
+                            text = "₹${"%, .0f".format(amount)}",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight(600),
+                            letterSpacing = (-0.5).sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            val netColor = if (summary.net >= 0) GreenColor else RedColor
+            val netText = "₹${"%, .0f".format(kotlin.math.abs(summary.net))}"
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 20.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "NET",
+                    fontSize = 11.sp,
+                    letterSpacing = 2.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+                Text(
+                    text = netText,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(700),
+                    letterSpacing = (-0.5).sp,
+                    color = netColor,
+                )
+            }
+        }
+
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = "LINKED UPI IDs",
+                    fontSize = 10.sp,
+                    letterSpacing = 3.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+                summary.identifiers.forEach { id ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = id.identifier,
+                            fontSize = 12.sp,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            text = "×",
+                            fontSize = 14.sp,
+                            color = RedColor,
+                            modifier = Modifier
+                                .clickable { onDeleteIdentifier(id) }
+                                .padding(start = 8.dp, top = 4.dp, bottom = 4.dp),
+                        )
+                    }
+                }
+                Text(
+                    text = "+ ADD IDENTIFIER",
+                    fontSize = 11.sp,
+                    letterSpacing = 1.5.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier
+                        .clickable { onAddIdentifier() }
+                        .padding(vertical = 6.dp),
+                )
+            }
+        }
+
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+            )
+        }
+
+        if (summary.transactions.isEmpty()) {
+            item {
+                Text(
+                    text = "No transactions linked to this circle yet.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(24.dp),
+                )
+            }
+        } else {
+            grouped.forEach { (month, txns) ->
+                item(key = month) {
+                    Text(
+                        text = month.uppercase(Locale.getDefault()),
+                        fontSize = 10.sp,
+                        letterSpacing = 3.sp,
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 10.dp),
+                    )
+                }
+                items(txns, key = { it.id }) { txn ->
+                    TxnRow(
+                        transaction = txn,
+                        onPress = { onTransactionClick(txn) },
+                    )
+                }
+            }
+        }
+
+        item { Spacer(Modifier.height(40.dp)) }
     }
 }
 
@@ -351,7 +503,13 @@ private fun AddIdentifierDialog(
                 androidx.compose.material3.OutlinedTextField(
                     value = identifier,
                     onValueChange = { identifier = it },
-                    label = { Text("UPI ID / NAME", style = MaterialTheme.typography.labelSmall) },
+                    label = { Text("IDENTIFIER", style = MaterialTheme.typography.labelSmall) },
+                    placeholder = {
+                        Text(
+                            "e.g. name@okaxis or merchant name",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )

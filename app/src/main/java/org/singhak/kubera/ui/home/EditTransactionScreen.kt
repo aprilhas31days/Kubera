@@ -7,21 +7,29 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,6 +39,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,7 +57,11 @@ import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.model.TransactionChannel
 import org.singhak.kubera.model.TransactionType
+import org.singhak.kubera.model.color
 import org.singhak.kubera.ui.circle.CircleViewModel
+import org.singhak.kubera.ui.theme.BorderColor
+import org.singhak.kubera.ui.theme.RedColor
+import org.singhak.kubera.ui.theme.GreenColor
 
 @Suppress("LongMethod")
 @Composable
@@ -86,16 +100,40 @@ fun EditTransactionScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .systemBarsPadding(),
+            .statusBarsPadding(),
     ) {
-        ScreenHeader(onBack = onBack, isNew = isNew)
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ChevronLeft,
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable { onBack() },
+            )
+            Text(
+                text = if (isNew) "Add Transaction" else "Edit Transaction",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(600),
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
 
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -106,50 +144,82 @@ fun EditTransactionScreen(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
                 )
             }
 
             EditField(label = "AMOUNT") {
-                OutlinedTextField(
-                    value = viewModel.amount,
-                    onValueChange = { viewModel.amount = it },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    leadingIcon = {
-                        Text(
-                            text = "₹",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = viewModel.amount,
+                        onValueChange = { viewModel.amount = it },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        leadingIcon = {
+                            Text(
+                                text = "₹",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TransactionType.entries.forEach { t ->
+                            val sel = viewModel.type == t
+                            val borderCol = if (sel) {
+                                if (t == TransactionType.DEBIT) RedColor else GreenColor
+                            } else {
+                                BorderColor
+                            }
+                            val textCol = if (sel) {
+                                if (t == TransactionType.DEBIT) RedColor else GreenColor
+                            } else {
+                                MaterialTheme.colorScheme.outline
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .border(1.dp, borderCol, RoundedCornerShape(12.dp))
+                                    .clickable { viewModel.type = t }
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = t.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    fontSize = 12.sp,
+                                    fontWeight = if (sel) FontWeight(600) else FontWeight.Normal,
+                                    color = textCol,
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
-            EditField(label = "TYPE") {
-                ChipSelector(
-                    options = TransactionType.entries,
-                    selected = viewModel.type,
-                    label = { it.name },
-                    onSelect = { viewModel.type = it },
-                )
-            }
-
-            EditField(label = "BANK") {
-                ChipSelector(
-                    options = Bank.entries,
-                    selected = viewModel.bank,
-                    label = { it.displayName.uppercase(Locale.getDefault()) },
-                    onSelect = { viewModel.bank = it },
+            EditField(label = "CATEGORY") {
+                CategoryChips(
+                    selected = viewModel.category,
+                    onSelect = { viewModel.category = it },
                 )
             }
 
             EditField(label = "CHANNEL") {
-                ChipSelector(
+                PillChipRow(
                     options = TransactionChannel.entries,
                     selected = viewModel.channel,
-                    label = { it.displayName.uppercase(Locale.getDefault()) },
+                    label = { it.displayName },
                     onSelect = { viewModel.channel = it },
+                )
+            }
+
+            EditField(label = "BANK") {
+                PillChipRow(
+                    options = Bank.entries,
+                    selected = viewModel.bank,
+                    label = { it.displayName },
+                    onSelect = { viewModel.bank = it },
                 )
             }
 
@@ -163,28 +233,27 @@ fun EditTransactionScreen(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
                 )
             }
 
-            EditField(label = "DATE") {
-                PickerField(
-                    value = dateFormat.format(timestampDate).uppercase(Locale.getDefault()),
-                    onClick = { showDatePicker = true },
-                )
-            }
-
-            EditField(label = "TIME") {
-                PickerField(
-                    value = timeFormat.format(timestampDate),
-                    onClick = { showTimePicker = true },
-                )
-            }
-
-            EditField(label = "CATEGORY") {
-                CategoryGrid(
-                    selected = viewModel.category,
-                    onSelect = { viewModel.category = it },
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    EditField(label = "DATE") {
+                        PickerField(
+                            value = dateFormat.format(timestampDate),
+                            onClick = { showDatePicker = true },
+                        )
+                    }
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    EditField(label = "TIME") {
+                        PickerField(
+                            value = timeFormat.format(timestampDate),
+                            onClick = { showTimePicker = true },
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -195,56 +264,58 @@ fun EditTransactionScreen(
                 text = "A transaction with these details already exists.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
             )
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 24.dp)
-                .background(MaterialTheme.colorScheme.primary)
-                .clickable {
-                    if (viewModel.merchant.isNotBlank() && viewModel.categoryChanged) {
-                        showRememberDialog = true
-                    } else {
-                        viewModel.save(false)
-                    }
-                }
-                .padding(vertical = 20.dp),
-            contentAlignment = Alignment.Center,
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = "SAVE TRANSACTION",
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-        }
-
-        if (viewModel.merchant.isNotBlank()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 16.dp)
-                    .clickable { showAddToCircleDialog = true }
-                    .padding(vertical = 12.dp),
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable {
+                        if (viewModel.merchant.isNotBlank() && viewModel.categoryChanged) {
+                            showRememberDialog = true
+                        } else {
+                            viewModel.save(false)
+                        }
+                    }
+                    .padding(vertical = 14.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "ADD TO CIRCLE",
-                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    text = if (isNew) "Add Transaction" else "Save Changes",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight(700),
+                    color = MaterialTheme.colorScheme.onPrimary,
                 )
+            }
+
+            if (viewModel.merchant.isNotBlank()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showAddToCircleDialog = true }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Add to Circle",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
             }
         }
     }
 
     if (showDatePicker) {
-        DatePickerDialog(
-            initialYear = timestampCal.get(Calendar.YEAR),
-            initialMonth = timestampCal.get(Calendar.MONTH) + 1,
-            initialDay = timestampCal.get(Calendar.DAY_OF_MONTH),
+        SingleDatePickerSheet(
+            initialMillis = viewModel.timestamp,
             onDismiss = { showDatePicker = false },
             onConfirm = { millis ->
                 showDatePicker = false
@@ -297,13 +368,13 @@ fun EditTransactionScreen(
             onDismissRequest = { showRememberDialog = false },
             title = {
                 Text(
-                    text = "REMEMBER CHOICE",
-                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+                    text = "Remember choice?",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight(600)),
                 )
             },
             text = {
                 Text(
-                    text = "Apply ${viewModel.category.displayName.uppercase(Locale.getDefault())} to all" +
+                    text = "Apply ${viewModel.category.displayName} to all" +
                         " ${viewModel.merchant.trim()} transactions?",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
                     color = MaterialTheme.colorScheme.outline,
@@ -313,49 +384,14 @@ fun EditTransactionScreen(
                 TextButton(onClick = {
                     showRememberDialog = false
                     viewModel.save(true)
-                }) {
-                    Text(
-                        text = "YES, REMEMBER",
-                        style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                    )
-                }
+                }) { Text("Yes, remember") }
             },
             dismissButton = {
                 TextButton(onClick = {
                     showRememberDialog = false
                     viewModel.save(false)
-                }) {
-                    Text(
-                        text = "SKIP",
-                        style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-                    )
-                }
+                }) { Text("Skip") }
             },
-        )
-    }
-}
-
-@Composable
-private fun ScreenHeader(onBack: () -> Unit, isNew: Boolean = false) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = if (isNew) "ADD TRANSACTION" else "EDIT TRANSACTION",
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-            color = MaterialTheme.colorScheme.outline,
-        )
-        Text(
-            text = "← BACK",
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
-            color = MaterialTheme.colorScheme.outlineVariant,
-            modifier = Modifier
-                .clickable { onBack() }
-                .padding(vertical = 4.dp, horizontal = 2.dp),
         )
     }
 }
@@ -365,82 +401,104 @@ private fun EditField(label: String, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
+            fontSize = 10.sp,
+            letterSpacing = 2.sp,
             color = MaterialTheme.colorScheme.outline,
         )
         content()
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun <T> ChipSelector(
+private fun CategoryChips(
+    selected: TransactionCategory,
+    onSelect: (TransactionCategory) -> Unit,
+) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        TransactionCategory.entries.forEach { cat ->
+            val isSelected = selected == cat
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .border(
+                        1.dp,
+                        if (isSelected) MaterialTheme.colorScheme.onSurface else BorderColor,
+                        RoundedCornerShape(20.dp),
+                    )
+                    .clickable { onSelect(cat) }
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(cat.color),
+                )
+                Text(
+                    text = cat.displayName,
+                    fontSize = 12.sp,
+                    fontWeight = if (isSelected) FontWeight(600) else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.outline,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun <T> PillChipRow(
     options: List<T>,
     selected: T,
     label: (T) -> String,
     onSelect: (T) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
             val isSelected = selected == option
-            Text(
-                text = label(option),
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.8.sp),
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.background
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
+            Box(
                 modifier = Modifier
-                    .background(
-                        if (isSelected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surface,
-                    )
+                    .clip(RoundedCornerShape(20.dp))
                     .border(
-                        0.5.dp,
-                        MaterialTheme.colorScheme.outlineVariant.copy(
-                            alpha = if (isSelected) 0f else 0.4f,
-                        ),
+                        1.dp,
+                        if (isSelected) MaterialTheme.colorScheme.onSurface else BorderColor,
+                        RoundedCornerShape(20.dp),
                     )
                     .clickable { onSelect(option) }
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-            )
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
+            ) {
+                Text(
+                    text = label(option),
+                    fontSize = 12.sp,
+                    fontWeight = if (isSelected) FontWeight(600) else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.outline,
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun CategoryGrid(selected: TransactionCategory, onSelect: (TransactionCategory) -> Unit) {
-    val categories = remember { TransactionCategory.entries.toList() }
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        categories.chunked(3).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                row.forEach { category ->
-                    val isSelected = selected == category
-                    Text(
-                        text = category.displayName.uppercase(Locale.getDefault()),
-                        style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.8.sp),
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.background
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        },
-                        modifier = Modifier
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surface,
-                            )
-                            .border(
-                                0.5.dp,
-                                MaterialTheme.colorScheme.outlineVariant.copy(
-                                    alpha = if (isSelected) 0f else 0.4f,
-                                ),
-                            )
-                            .clickable { onSelect(category) }
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                    )
-                }
-            }
-        }
+private fun PickerField(value: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+    ) {
+        Text(
+            text = value,
+            fontSize = 13.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontFamily = FontFamily.Default,
+        )
     }
 }
 
@@ -454,25 +512,20 @@ private fun AddToCircleDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "ADD TO CIRCLE",
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-            )
-        },
+        title = { Text("Add to Circle", fontWeight = FontWeight(600)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = merchant.uppercase(Locale.getDefault()),
-                    style = MaterialTheme.typography.labelSmall,
+                    text = merchant,
+                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
                 people.forEach { person ->
                     Text(
-                        text = person.name.uppercase(Locale.getDefault()),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
-                        color = MaterialTheme.colorScheme.primary,
+                        text = person.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onAddToExisting(person) }
@@ -480,9 +533,9 @@ private fun AddToCircleDialog(
                     )
                 }
                 Text(
-                    text = "+ NEW PERSON",
-                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.5.sp),
-                    color = MaterialTheme.colorScheme.outlineVariant,
+                    text = "+ New person",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier
                         .clickable { onNewPerson() }
                         .padding(vertical = 10.dp),
@@ -491,9 +544,7 @@ private fun AddToCircleDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("CANCEL", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp))
-            }
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         },
     )
 }
@@ -507,26 +558,22 @@ private fun NewPersonForCircleDialog(
     var name by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "NEW PERSON",
-                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-            )
-        },
+        title = { Text("New Person", fontWeight = FontWeight(600)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "${merchant.uppercase(Locale.getDefault())} will be added as an identifier.",
+                    text = "$merchant will be added as an identifier.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline,
                 )
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("NAME", style = MaterialTheme.typography.labelSmall) },
+                    label = { Text("Name") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
                 )
             }
         },
@@ -534,37 +581,10 @@ private fun NewPersonForCircleDialog(
             TextButton(
                 onClick = { if (name.isNotBlank()) onConfirm(name) },
                 enabled = name.isNotBlank(),
-            ) {
-                Text("ADD", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp))
-            }
+            ) { Text("Add") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("CANCEL", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp))
-            }
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         },
     )
-}
-
-@Composable
-private fun PickerField(value: String, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 4.dp),
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Normal),
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(0.5.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
-        )
-    }
 }

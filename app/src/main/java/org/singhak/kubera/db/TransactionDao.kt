@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import org.singhak.kubera.model.CategorySpend
+import org.singhak.kubera.model.DailySpend
 import org.singhak.kubera.model.MerchantSpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.MonthlySpend
@@ -24,26 +25,30 @@ interface TransactionDao {
     @Query(
         """
         SELECT COALESCE(SUM(CASE WHEN type = 'DEBIT' THEN amount ELSE 0 END), 0) AS totalExpenditure,
+               COALESCE(SUM(CASE WHEN type = 'CREDIT' THEN amount ELSE 0 END), 0) AS totalCredited,
                COUNT(*) AS entryCount
         FROM transactions
-        WHERE timestamp >= :fromTimestamp
+        WHERE timestamp >= :fromTimestamp AND timestamp < :toTimestamp
     """
     )
-    fun getMonthSummary(fromTimestamp: Long): Flow<MonthSummary>
+    fun getMonthSummary(fromTimestamp: Long, toTimestamp: Long): Flow<MonthSummary>
 
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
     fun getAllTransactions(): Flow<List<Transaction>>
+
+    @Query("SELECT * FROM transactions WHERE timestamp >= :from AND timestamp < :to ORDER BY timestamp DESC")
+    fun getTransactionsBetweenFlow(from: Long, to: Long): Flow<List<Transaction>>
 
     @Query(
         """
         SELECT category, SUM(amount) AS total
         FROM transactions
-        WHERE timestamp >= :fromTimestamp AND type = 'DEBIT'
+        WHERE timestamp >= :fromTimestamp AND timestamp < :toTimestamp AND type = 'DEBIT'
         GROUP BY category
         ORDER BY total DESC
     """
     )
-    fun getCategoryBreakdown(fromTimestamp: Long): Flow<List<CategorySpend>>
+    fun getCategoryBreakdown(fromTimestamp: Long, toTimestamp: Long): Flow<List<CategorySpend>>
 
     @Query("UPDATE transactions SET category = :category WHERE LOWER(merchant) = LOWER(:keyword)")
     suspend fun recategorizeExact(keyword: String, category: TransactionCategory)
@@ -74,6 +79,18 @@ interface TransactionDao {
     """
     )
     fun getMonthlySpend(fromTimestamp: Long): Flow<List<MonthlySpend>>
+
+    @Query(
+        """
+        SELECT strftime('%Y-%m-%d', datetime(timestamp/1000, 'unixepoch', 'localtime')) AS day,
+               SUM(CASE WHEN type = 'DEBIT' THEN amount ELSE 0 END) AS total
+        FROM transactions
+        WHERE timestamp >= :fromTimestamp
+        GROUP BY day
+        ORDER BY day ASC
+    """
+    )
+    fun getDailySpend(fromTimestamp: Long): Flow<List<DailySpend>>
 
     @Query(
         """

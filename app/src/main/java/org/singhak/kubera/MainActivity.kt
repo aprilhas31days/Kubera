@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import org.singhak.kubera.model.Bank
 import org.singhak.kubera.model.Transaction
@@ -31,22 +29,21 @@ import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.ui.AppBottomBar
 import org.singhak.kubera.ui.AppTab
 import org.singhak.kubera.ui.analysis.AnalysisScreen
-import org.singhak.kubera.ui.analysis.AnalysisViewModel
+import org.singhak.kubera.ui.autopay.AutopayScreen
 import org.singhak.kubera.ui.circle.CircleScreen
 import org.singhak.kubera.ui.home.AllTransactionsScreen
 import org.singhak.kubera.ui.home.EditTransactionScreen
 import org.singhak.kubera.ui.home.HomeScreen
-import org.singhak.kubera.ui.home.HomeViewModel
-import org.singhak.kubera.ui.rules.RulesScreen
-import org.singhak.kubera.ui.rules.RulesViewModel
+import org.singhak.kubera.ui.home.NoPermissionScreen
+import org.singhak.kubera.ui.home.TxnDetailScreen
+import org.singhak.kubera.ui.settings.SettingsScreen
 import org.singhak.kubera.ui.theme.KuberaTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private var smsPermissionGranted by mutableStateOf(false)
     private var selectedTab by mutableStateOf(AppTab.HOME)
-    private var selectedTransaction by mutableStateOf<Transaction?>(null)
-    private var showAllTransactions by mutableStateOf(false)
+    private var overlay by mutableStateOf<Overlay?>(null)
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -72,74 +69,69 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val homeViewModel: HomeViewModel = hiltViewModel()
-            val rulesViewModel: RulesViewModel = hiltViewModel()
-            val analysisViewModel: AnalysisViewModel = hiltViewModel()
-
-            val monthSummary by homeViewModel.monthSummary.collectAsState()
-            val transactions by homeViewModel.transactions.collectAsState()
-            val categoryBreakdown by homeViewModel.categoryBreakdown.collectAsState()
-            val backfillState by homeViewModel.backfillState.collectAsState()
-            val userRules by rulesViewModel.userRules.collectAsState()
-            val analysisCategoryBreakdown by analysisViewModel.categoryBreakdown.collectAsState()
-            val monthlyTrend by analysisViewModel.monthlyTrend.collectAsState()
-            val topMerchants by analysisViewModel.topMerchants.collectAsState()
-
             KuberaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    val txn = selectedTransaction
-                    if (txn != null) {
-                        EditTransactionScreen(
-                            transaction = txn,
-                            onBack = { selectedTransaction = null },
+                    if (!smsPermissionGranted) {
+                        NoPermissionScreen(onGrantAccess = { openAppSettings() })
+                    } else when (val o = overlay) {
+                        is Overlay.Transactions -> AllTransactionsScreen(
+                            onBack = { overlay = null },
+                            onTransactionClick = { overlay = Overlay.TxnDetail(it) },
                         )
-                    } else if (showAllTransactions) {
-                        AllTransactionsScreen(
-                            onBack = { showAllTransactions = false },
-                            onTransactionClick = { selectedTransaction = it },
+                        is Overlay.TxnDetail -> TxnDetailScreen(
+                            transaction = o.t,
+                            onBack = { overlay = null },
+                            onEdit = { overlay = Overlay.EditTxn(it) },
                         )
-                    } else {
-                        Scaffold(
+                        is Overlay.EditTxn -> EditTransactionScreen(
+                            transaction = o.t,
+                            onBack = { overlay = null },
+                        )
+                        is Overlay.Settings -> SettingsScreen(
+                            onBack = { overlay = null },
+                        )
+                        null -> Scaffold(
                             bottomBar = {
                                 AppBottomBar(
                                     currentTab = selectedTab,
-                                    onTabSelected = { selectedTab = it }
-                                )
-                            }
-                        ) { innerPadding ->
-                            Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
-                                when (selectedTab) {
-                                    AppTab.HOME -> HomeScreen(
-                                        hasPermission = smsPermissionGranted,
-                                        monthSummary = monthSummary,
-                                        transactions = transactions,
-                                        categoryBreakdown = categoryBreakdown,
-                                        backfillState = backfillState,
-                                        onGrantAccess = { openAppSettings() },
-                                        onBackfillFromDate = { date -> homeViewModel.backfillFromDate(date) },
-                                        onTransactionClick = { selectedTransaction = it },
-                                        onViewAll = { showAllTransactions = true },
-                                        onAddTransaction = {
-                                            selectedTransaction = Transaction(
+                                    onTabSelected = { selectedTab = it },
+                                    onAddTransaction = {
+                                        overlay = Overlay.EditTxn(
+                                            Transaction(
                                                 amount = 0.0,
                                                 type = TransactionType.DEBIT,
                                                 channel = TransactionChannel.UPI,
                                                 timestamp = System.currentTimeMillis(),
                                                 bank = Bank.INDBNK,
                                             )
+                                        )
+                                    },
+                                )
+                            }
+                        ) { innerPadding ->
+                            Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
+                                when (selectedTab) {
+                                    AppTab.HOME -> HomeScreen(
+                                        onTransactionClick = { overlay = Overlay.TxnDetail(it) },
+                                        onViewAll = { overlay = Overlay.Transactions },
+                                        onAddTransaction = {
+                                            overlay = Overlay.EditTxn(
+                                                Transaction(
+                                                    amount = 0.0,
+                                                    type = TransactionType.DEBIT,
+                                                    channel = TransactionChannel.UPI,
+                                                    timestamp = System.currentTimeMillis(),
+                                                    bank = Bank.INDBNK,
+                                                )
+                                            )
                                         },
+                                        onOpenSettings = { overlay = Overlay.Settings },
                                     )
-                                    AppTab.ANALYSIS -> AnalysisScreen(
-                                        categoryBreakdown = analysisCategoryBreakdown,
-                                        monthlyTrend = monthlyTrend,
-                                        topMerchants = topMerchants,
+                                    AppTab.ANALYTICS -> AnalysisScreen()
+                                    AppTab.CIRCLES -> CircleScreen(
+                                        onTransactionClick = { overlay = Overlay.TxnDetail(it) },
                                     )
-                                    AppTab.CIRCLE -> CircleScreen()
-                                    AppTab.RULES -> RulesScreen(
-                                        rules = userRules,
-                                        onAddRule = { keyword, category -> rulesViewModel.addRule(keyword, category) },
-                                        onDeleteRule = { rule -> rulesViewModel.deleteRule(rule) },
-                                    )
+                                    AppTab.AUTOPAY -> AutopayScreen()
                                 }
                             }
                         }

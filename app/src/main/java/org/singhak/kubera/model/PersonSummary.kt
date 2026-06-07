@@ -8,6 +8,7 @@ data class PersonSummary(
     val identifiers: List<PersonIdentifier>,
     val sent: Double,
     val received: Double,
+    val transactions: List<Transaction> = emptyList(),
 ) {
     val net: Double get() = received - sent
 }

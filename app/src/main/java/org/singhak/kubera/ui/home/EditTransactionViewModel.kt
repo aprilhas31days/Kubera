@@ -21,11 +21,6 @@ import org.singhak.kubera.model.TransactionChannel
 import org.singhak.kubera.model.TransactionType
 import org.singhak.kubera.repository.TransactionRepository
 
-sealed interface SaveResult {
-    data object Success : SaveResult
-    data object DuplicateError : SaveResult
-}
-
 @HiltViewModel
 class EditTransactionViewModel @Inject constructor(
     private val repository: TransactionRepository,

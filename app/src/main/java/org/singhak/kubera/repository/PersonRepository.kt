@@ -38,6 +38,7 @@ class PersonRepository @Inject constructor(
                 identifiers = pwi.identifiers,
                 sent = matched.filter { it.type == TransactionType.DEBIT }.sumOf { it.amount },
                 received = matched.filter { it.type == TransactionType.CREDIT }.sumOf { it.amount },
+                transactions = matched.sortedByDescending { it.timestamp },
             )
         }
     }

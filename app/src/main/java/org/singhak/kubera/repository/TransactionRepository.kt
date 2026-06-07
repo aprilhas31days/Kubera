@@ -9,6 +9,7 @@ import org.singhak.kubera.db.RuleSource
 import org.singhak.kubera.db.TransactionDao
 import org.singhak.kubera.db.categorize
 import org.singhak.kubera.model.CategorySpend
+import org.singhak.kubera.model.DailySpend
 import org.singhak.kubera.model.MerchantSpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.MonthlySpend
@@ -26,29 +27,16 @@ class TransactionRepository @Inject constructor(
         transactionDao.insert(transaction.copy(category = categorize(transaction.merchant, rules)))
     }
 
-    fun getCurrentMonthSummary(): Flow<MonthSummary> {
-        val monthStart = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        return transactionDao.getMonthSummary(monthStart)
-    }
+    fun getMonthSummary(fromTimestamp: Long, toTimestamp: Long): Flow<MonthSummary> =
+        transactionDao.getMonthSummary(fromTimestamp, toTimestamp)
+
+    fun getTransactionsForMonth(fromTimestamp: Long, toTimestamp: Long): Flow<List<Transaction>> =
+        transactionDao.getTransactionsBetweenFlow(fromTimestamp, toTimestamp)
 
     fun getAllTransactions(): Flow<List<Transaction>> = transactionDao.getAllTransactions()
 
-    fun getCurrentMonthCategoryBreakdown(): Flow<List<CategorySpend>> {
-        val monthStart = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        return transactionDao.getCategoryBreakdown(monthStart)
-    }
+    fun getCategoryBreakdown(fromTimestamp: Long, toTimestamp: Long): Flow<List<CategorySpend>> =
+        transactionDao.getCategoryBreakdown(fromTimestamp, toTimestamp)
 
     fun getUserRules(): Flow<List<CategoryRule>> = categoryRuleDao.getUserRules()
 
@@ -83,6 +71,9 @@ class TransactionRepository @Inject constructor(
     fun getMonthlySpend(fromTimestamp: Long): Flow<List<MonthlySpend>> =
         transactionDao.getMonthlySpend(fromTimestamp)
 
+    fun getDailySpend(fromTimestamp: Long): Flow<List<DailySpend>> =
+        transactionDao.getDailySpend(fromTimestamp)
+
     fun getTopMerchants(fromTimestamp: Long, limit: Int = 5): Flow<List<MerchantSpend>> =
         transactionDao.getTopMerchants(fromTimestamp, limit)
 
@@ -97,4 +88,18 @@ class TransactionRepository @Inject constructor(
 
         return transactions.isNotEmpty()
     }
+}
+
+fun monthRange(year: Int, month: Int): Pair<Long, Long> {
+    val cal = Calendar.getInstance()
+    cal.set(year, month, 1, 0, 0, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    val from = cal.timeInMillis
+    cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+    cal.set(Calendar.HOUR_OF_DAY, 23)
+    cal.set(Calendar.MINUTE, 59)
+    cal.set(Calendar.SECOND, 59)
+    cal.set(Calendar.MILLISECOND, 999)
+    val to = cal.timeInMillis
+    return from to to
 }
