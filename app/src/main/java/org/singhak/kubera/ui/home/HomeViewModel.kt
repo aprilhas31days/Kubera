@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
+import org.singhak.kubera.model.TransactionCategory
 import org.singhak.kubera.repository.TransactionRepository
 import org.singhak.kubera.repository.monthRange
 
@@ -71,6 +72,12 @@ class HomeViewModel @Inject constructor(private val repository: TransactionRepos
             _year.value = _year.value + 1
         } else {
             _month.value = _month.value + 1
+        }
+    }
+
+    fun categorise(transaction: Transaction, category: TransactionCategory, addRule: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateTransaction(transaction.copy(category = category), addRule)
         }
     }
 

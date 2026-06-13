@@ -50,12 +50,14 @@ class DailySummaryReceiver : BroadcastReceiver() {
         Log.d(TAG, "todayRange=$todayStart..$todayEnd  found=${transactions.size}")
         if (transactions.isEmpty()) return
 
-        val categorised = transactions.count { it.category != TransactionCategory.OTHER }
-        val breakdown = transactions
-            .groupBy { it.category }
-            .mapValues { (_, txns) -> txns.sumOf { it.amount } }
-            .entries
-            .sortedByDescending { it.value }
+        val uncatCount = transactions.count { it.category == TransactionCategory.OTHER }
+        val catCount = transactions.size - uncatCount
+
+        val contentText = if (uncatCount == 0) {
+            "✓ All auto-categorised"
+        } else {
+            "$catCount auto-categorised · $uncatCount ${if (uncatCount == 1) "needs" else "need"} review"
+        }
 
         val tapPendingIntent = PendingIntent.getActivity(
             context,
@@ -66,22 +68,26 @@ class DailySummaryReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        val style = NotificationCompat.InboxStyle()
-            .setSummaryText("$categorised of ${transactions.size} categorised")
-        breakdown.forEach { (category, total) ->
-            style.addLine("${category.displayName} · ₹${"%.2f".format(total)}")
+        val style = NotificationCompat.InboxStyle().setSummaryText(contentText)
+        transactions.sortedByDescending { it.timestamp }.take(5).forEach { txn ->
+            val label = if (txn.category != TransactionCategory.OTHER) txn.category.displayName
+                        else "Needs review"
+            style.addLine("${txn.merchant ?: txn.channel.displayName} · ₹${"%.0f".format(txn.amount)} · $label")
         }
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("${transactions.size} transactions today")
-            .setContentText("$categorised auto-categorised")
+            .setContentTitle("${transactions.size} new transaction${if (transactions.size == 1) "" else "s"}")
+            .setContentText(contentText)
             .setStyle(style)
             .setContentIntent(tapPendingIntent)
             .setAutoCancel(true)
-            .build()
 
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        if (uncatCount > 0) {
+            builder.addAction(0, "Review", tapPendingIntent)
+        }
+
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
     }
 
     private fun notificationsAllowed(context: Context): Boolean {

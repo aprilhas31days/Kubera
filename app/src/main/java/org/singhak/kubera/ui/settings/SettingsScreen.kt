@@ -74,6 +74,7 @@ fun SettingsScreen(
 
     when {
         subScreen == "rules" -> RulesSubScreen(onBack = { subScreen = null })
+        subScreen == "categories" -> CategoriesSubScreen(onBack = { subScreen = null })
         subScreen == "circles" && selectedPersonId != null ->
             CircleDetailSubScreen(
                 personId = selectedPersonId!!,
@@ -148,6 +149,11 @@ private fun RootSettingsList(
             title = "Rules",
             subtitle = "${userRules.size} custom ${if (userRules.size == 1) "rule" else "rules"}",
             onClick = { onNavigate("rules") },
+        )
+        SettingsRow(
+            title = "Categories",
+            subtitle = "${TransactionCategory.entries.size} categories",
+            onClick = { onNavigate("categories") },
         )
         SettingsRow(
             title = "Circles",
@@ -489,6 +495,93 @@ private fun AddRuleSheet(
                         else MaterialTheme.colorScheme.outline,
             )
         }
+    }
+}
+
+// ── Categories sub-screen ────────────────────────────────────────────────────
+
+@Composable
+private fun CategoriesSubScreen(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val categories = remember { TransactionCategory.entries }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .systemBarsPadding(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "←",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.clickable { onBack() }.padding(8.dp),
+            )
+            Text(
+                text = "Categories",
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = FontWeight(600)),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f).padding(start = 4.dp),
+            )
+        }
+
+        Text(
+            text = "ALL CATEGORIES",
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+            color = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+        )
+
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(categories) { category ->
+                CategoryRow(category = category)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryRow(category: TransactionCategory) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .clip(CircleShape)
+                .background(category.color),
+        )
+        Text(
+            text = category.displayName,
+            fontSize = 13.sp,
+            fontWeight = FontWeight(600),
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = "DEFAULT",
+            fontSize = 10.sp,
+            letterSpacing = 1.sp,
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
     }
 }
 

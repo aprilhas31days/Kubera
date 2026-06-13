@@ -17,6 +17,8 @@ const DAYS = ["Su","Mo","Tu","We","Th","Fr","Sa"];
 
 const allTxns = [
   {id:1, merchant:"Zomato",        category:"Food",      amount:-340,  date:"2026-06-06", time:"8:42 PM",  type:"UPI",  bank:"HDFC"},
+  {id:13,merchant:"Blinkit",       category:null,        amount:-640,  date:"2026-06-06", time:"11:20 AM", type:"UPI",  bank:"HDFC"},
+  {id:14,merchant:"PhonePe",       category:null,        amount:-200,  date:"2026-06-06", time:"9:05 AM",  type:"UPI",  bank:"SBI"},
   {id:2, merchant:"Salary Credit", category:"Income",    amount:60000, date:"2026-06-01", time:"9:00 AM",  type:"NEFT", bank:"HDFC"},
   {id:3, merchant:"Uber",          category:"Transport", amount:-180,  date:"2026-06-05", time:"6:15 PM",  type:"UPI",  bank:"SBI"},
   {id:4, merchant:"Swiggy",        category:"Food",      amount:-520,  date:"2026-06-04", time:"1:30 PM",  type:"UPI",  bank:"HDFC"},
@@ -248,18 +250,86 @@ function FilterSheet({filters,setFilters,onClose,categories}){
   );
 }
 
+// Inline category picker for uncategorised transactions
+function UncatRow({t,onCategorise,onPress}){
+  const [expanded,setExpanded]=useState(false);
+  const [chosen,setChosen]=useState(null);
+  const [stage,setStage]=useState("pick"); // "pick" | "rule"
+  const handleConfirm=()=>{if(!chosen)return;setStage("rule");};
+  const handleRule=(addRule)=>{onCategorise(t.id,chosen,addRule);setExpanded(false);setStage("pick");setChosen(null);};
+  return (
+    <div style={{borderBottom:`1px solid ${T.subtle}`,background:`${T.red}11`,margin:"0 -20px",padding:"0 20px"}}>
+      <div style={{display:"flex",alignItems:"center",gap:14,paddingTop:13,paddingBottom:13,cursor:"pointer"}} onClick={()=>{if(stage==="pick")setExpanded(e=>!e);}}>
+        <div style={{width:8,height:8,borderRadius:"50%",border:`1.5px dashed ${T.textSecondary}`,flexShrink:0}}/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{color:T.textPrimary,fontSize:13,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginBottom:4}}>{t.merchant}</div>
+          <div style={{color:T.textSecondary,fontSize:11}}>{t.type}<span style={{color:T.border}}>·</span>{t.bank}</div>
+        </div>
+        <div style={{textAlign:"right",flexShrink:0}}>
+          <div style={{color:t.amount>0?T.green:T.red,fontSize:14,fontWeight:700,letterSpacing:-0.5,marginBottom:3}}>₹{Math.abs(t.amount).toLocaleString("en-IN")}</div>
+          <div style={{color:T.textSecondary,fontSize:10}}>{t.time}</div>
+        </div>
+      </div>
+      {expanded&&stage==="pick"&&(
+        <div style={{paddingBottom:14}}>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:10}}>
+            {ALL_CATEGORIES.map(cat=>(
+              <div key={cat} onClick={()=>setChosen(cat)} style={{padding:"5px 12px",borderRadius:20,fontSize:11,cursor:"pointer",background:chosen===cat?catColors[cat]+"33":T.subtle,border:`1px solid ${chosen===cat?catColors[cat]:T.border}`,color:chosen===cat?catColors[cat]:T.textSecondary,display:"flex",alignItems:"center",gap:5}}>
+                <div style={{width:5,height:5,borderRadius:"50%",background:catColors[cat]}}/>
+                {cat}
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <div onClick={()=>{setExpanded(false);setChosen(null);}} style={{flex:1,padding:"9px",borderRadius:10,border:`1px solid ${T.border}`,color:T.textSecondary,fontSize:12,textAlign:"center",cursor:"pointer"}}>Cancel</div>
+            <div onClick={handleConfirm} style={{flex:2,padding:"9px",borderRadius:10,background:chosen?T.textPrimary:T.subtle,color:chosen?T.bg:T.textSecondary,fontSize:12,fontWeight:600,textAlign:"center",cursor:chosen?"pointer":"default",transition:"background 0.15s"}}>
+              {chosen?`Confirm as ${chosen}`:"Pick a category"}
+            </div>
+          </div>
+        </div>
+      )}
+      {expanded&&stage==="rule"&&(
+        <div style={{paddingBottom:14}}>
+          <div style={{color:T.textPrimary,fontSize:13,fontWeight:600,marginBottom:4}}>Always categorise {t.merchant} as {chosen}?</div>
+          <div style={{color:T.textSecondary,fontSize:11,marginBottom:12}}>This will add a rule in Settings. Future transactions will be auto-categorised.</div>
+          <div style={{display:"flex",gap:8}}>
+            <div onClick={()=>handleRule(false)} style={{flex:1,padding:"9px",borderRadius:10,border:`1px solid ${T.border}`,color:T.textSecondary,fontSize:12,textAlign:"center",cursor:"pointer"}}>Just this once</div>
+            <div onClick={()=>handleRule(true)} style={{flex:2,padding:"9px",borderRadius:10,background:T.textPrimary,color:T.bg,fontSize:12,fontWeight:600,textAlign:"center",cursor:"pointer"}}>Yes, add rule</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Home
 function HomeScreen({navigate,setTab}){
   const now=new Date("2026-06-06");
+  const todayStr=now.toISOString().split("T")[0];
   const [vy,setVy]=useState(now.getFullYear());
   const [vm,setVm]=useState(now.getMonth());
+  const [cats,setCats]=useState({});
   const prevMonth=()=>{if(vm===0){setVm(11);setVy(y=>y-1);}else setVm(m=>m-1);};
   const nextMonth=()=>{if(vm===11){setVm(0);setVy(y=>y+1);}else setVm(m=>m+1);};
   const isCurrentMonth=vy===now.getFullYear()&&vm===now.getMonth();
   const monthTxns=useMemo(()=>allTxns.filter(t=>{const d=new Date(t.date);return d.getFullYear()===vy&&d.getMonth()===vm;}),[vy,vm]);
   const credited=monthTxns.filter(t=>t.amount>0).reduce((s,t)=>s+t.amount,0);
   const debited=monthTxns.filter(t=>t.amount<0).reduce((s,t)=>s+Math.abs(t.amount),0);
-  const recentTxns=useMemo(()=>[...monthTxns].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5),[monthTxns]);
+
+  const todayTxns=useMemo(()=>allTxns.filter(t=>t.date===todayStr),[]);
+  const recentGroups=useMemo(()=>{
+    if(todayTxns.length>0) return [{label:"TODAY",txns:todayTxns}];
+    const recent=[...allTxns].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const seen=new Set();const grouped=[];
+    for(const t of recent){
+      if(!seen.has(t.date)){seen.add(t.date);grouped.push({label:new Date(t.date).toLocaleDateString("en-IN",{day:"numeric",month:"short"}).toUpperCase(),txns:[]});}
+      grouped[grouped.length-1].txns.push(t);
+      if(grouped.reduce((s,g)=>s+g.txns.length,0)>=7)break;
+    }
+    return grouped;
+  },[]);
+  const uncatCount=recentGroups.flatMap(g=>g.txns).filter(t=>!t.category&&!cats[t.id]).length;
+
   return (
     <div style={{flex:1,overflowY:"auto",padding:"24px 20px 16px"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:28}}>
@@ -287,12 +357,25 @@ function HomeScreen({navigate,setTab}){
       </div>
       <Divider/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <div style={{color:T.textSecondary,fontSize:10,letterSpacing:3}}>RECENT</div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{color:T.textSecondary,fontSize:10,letterSpacing:3}}>{recentGroups[0]?.label||"RECENT"}</div>
+          {uncatCount>0&&<div style={{fontSize:10,color:T.red,border:`1px solid ${T.red}33`,background:`${T.red}11`,padding:"2px 7px",borderRadius:4,letterSpacing:0.5}}>{uncatCount} to review</div>}
+        </div>
         <span onClick={()=>navigate("transactions")} style={{color:T.textPrimary,fontSize:11,cursor:"pointer",opacity:0.5}}>Show all</span>
       </div>
-      {recentTxns.length===0
-        ?<div style={{color:T.textSecondary,fontSize:13,textAlign:"center",marginTop:40}}>No transactions this month</div>
-        :recentTxns.map((t,i)=><TxnRow key={t.id} t={t} showDate={true} last={i===recentTxns.length-1} onPress={()=>navigate("txnDetail",t)}/>)
+      {recentGroups.length===0
+        ?<div style={{color:T.textSecondary,fontSize:13,textAlign:"center",marginTop:40}}>No transactions yet</div>
+        :recentGroups.map(({label,txns},gi)=>(
+          <div key={label}>
+            {gi>0&&<div style={{color:T.textSecondary,fontSize:10,letterSpacing:3,marginBottom:10,marginTop:16}}>{label}</div>}
+            {txns.map((t,i)=>{
+              const resolved={...t,category:cats[t.id]||t.category};
+              return !resolved.category
+                ?<UncatRow key={t.id} t={t} onCategorise={(id,cat)=>setCats(c=>({...c,[id]:cat}))} onPress={()=>navigate("txnDetail",t)}/>
+                :<TxnRow key={t.id} t={resolved} showDate={false} last={i===txns.length-1} onPress={()=>navigate("txnDetail",t)}/>;
+            })}
+          </div>
+        ))
       }
     </div>
   );
@@ -690,10 +773,11 @@ function SettingsScreen({onBack,categories,setCategories}){
   const [showAdd,setShowAdd]=useState(false);
   const [addPattern,setAddPattern]=useState("");
   const [addCatFor,setAddCatFor]=useState(categories[0]);
+  const [newCatVal,setNewCatVal]=useState("");
   const [newCircleName,setNewCircleName]=useState("");
   const [newUpi,setNewUpi]=useState("");
 
-  const resetAdd=()=>{setShowAdd(false);setAddPattern("");setNewCircleName("");setNewUpi("");};
+  const resetAdd=()=>{setShowAdd(false);setAddPattern("");setNewCatVal("");setNewCircleName("");setNewUpi("");};
 
   if(screen==="rules") return (
     <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
@@ -722,6 +806,29 @@ function SettingsScreen({onBack,categories,setCategories}){
         <div style={{marginBottom:24}}><FL c="ASSIGN CATEGORY"/><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{categories.map(cat=><Chip key={cat} label={cat} selected={addCatFor===cat} onToggle={()=>setAddCatFor(cat)} color={catColors[cat]}/>)}</div></div>
         <SaveBtn label="Add Rule" onPress={()=>{if(addPattern.trim()){setRules(r=>[...r,{id:Date.now(),pattern:addPattern.trim().toLowerCase(),category:addCatFor}]);resetAdd();}}} enabled={!!addPattern.trim()}/>
       </Sheet>}
+    </div>
+  );
+
+  if(screen==="categories") return (
+    <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div style={{padding:"24px 20px 0"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:24}}>
+          <div onClick={()=>{setScreen(null);resetAdd();}} style={{cursor:"pointer"}}><BackIcon/></div>
+          <div style={{color:T.textPrimary,fontSize:16,fontWeight:600,flex:1}}>Categories</div>
+          <div onClick={()=>setShowAdd(true)} style={{cursor:"pointer"}}><PlusIconBtn/></div>
+        </div>
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:"0 20px 40px"}}>
+        <SL c="ALL CATEGORIES"/>
+        {categories.map((cat,i)=>(
+          <div key={cat} style={{display:"flex",alignItems:"center",gap:12,paddingTop:14,paddingBottom:14,borderBottom:i<categories.length-1?`1px solid ${T.subtle}`:"none"}}>
+            <div style={{width:10,height:10,borderRadius:"50%",background:catColors[cat]||T.textSecondary,flexShrink:0}}/>
+            <div style={{flex:1,color:T.textPrimary,fontSize:13,fontWeight:600}}>{cat}</div>
+            {!ALL_CATEGORIES.includes(cat)?<div onClick={()=>setCategories(c=>c.filter(x=>x!==cat))} style={{cursor:"pointer",padding:4}}><TrashIcon/></div>:<div style={{color:T.textMuted,fontSize:10,letterSpacing:1}}>DEFAULT</div>}
+          </div>
+        ))}
+      </div>
+      {showAdd&&<Sheet onClose={resetAdd} title="New Category"><div style={{marginBottom:24}}><FL c="NAME"/><TxtIn value={newCatVal} onChange={setNewCatVal} placeholder="e.g. Chai & Snacks"/></div><SaveBtn label="Add Category" onPress={()=>{const t=newCatVal.trim();if(t&&!categories.includes(t)){setCategories(c=>[...c,t]);resetAdd();}}} enabled={!!newCatVal.trim()}/></Sheet>}
     </div>
   );
 
@@ -771,7 +878,7 @@ function SettingsScreen({onBack,categories,setCategories}){
     );
   }
 
-  const items=[{id:"rules",label:"Rules",desc:`${rules.length} active rules`},{id:"circles",label:"Circles",desc:`${sCircles.length} circles`}];
+  const items=[{id:"rules",label:"Rules",desc:`${rules.length} active rules`},{id:"categories",label:"Categories",desc:`${categories.length} categories`},{id:"circles",label:"Circles",desc:`${sCircles.length} circles`}];
   return (
     <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <div style={{padding:"24px 20px 0"}}>
