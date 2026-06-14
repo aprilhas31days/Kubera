@@ -12,6 +12,13 @@
     },
     "IMPS": {
       "CREDIT": "Your a/c. {account} is credited by Rs. {amount} on {...} by a/c linked to mobile {...} (IMPS Ref no. {...})."
+    },
+    "AUTOPAY": {
+      "DEBIT": "Your account will be debited with Rs {amount} towards {merchant} for the Autopay on",
+      "REVOKE": [
+        "Your UPI-Mandate is successfully Revoked towards {merchant} for Rs {amount}",
+        "Your UPI-Mandate is successfully Revoked towards {merchant} for {amount}."
+      ]
     }
   },
   "KOTAKB": {

@@ -138,5 +138,61 @@
       "account": "XXXX5949",
       "merchant": null
     }
+  },
+  {
+    "input": {
+      "sender": "AX-INDBNK-S",
+      "sms": "Your account will be debited with Rs 10000.00 towards MUTUAL FUNDS ICCL AU for the Autopay on 10-May-26.Pause mandate to stop execution - Indian Bank"
+    },
+    "expected": {
+      "bank": "INDBNK",
+      "amount": 10000.0,
+      "type": "DEBIT",
+      "channel": "AUTOPAY",
+      "account": null,
+      "merchant": "MUTUAL FUNDS ICCL AU"
+    }
+  },
+  {
+    "input": {
+      "sender": "BV-INDBNK-S",
+      "sms": "Your account will be debited with Rs 599.00 towards Prime Video 3P Subsc for the Autopay on 15-Jun-26.Pause mandate to stop execution - Indian Bank"
+    },
+    "expected": {
+      "bank": "INDBNK",
+      "amount": 599.0,
+      "type": "DEBIT",
+      "channel": "AUTOPAY",
+      "account": null,
+      "merchant": "Prime Video 3P Subsc"
+    }
+  },
+  {
+    "input": {
+      "sender": "BT-INDBNK-S",
+      "sms": "Your UPI-Mandate is successfully Revoked towards Netflix Entertainmen for Rs 199.00 -Indian Bank"
+    },
+    "expected": {
+      "bank": "INDBNK",
+      "amount": 199.0,
+      "type": "REVOKE",
+      "channel": "AUTOPAY",
+      "account": null,
+      "merchant": "Netflix Entertainmen"
+    }
+  },
+  {
+    "input": {
+      "sender": "JX-INDBNK-S",
+      "sms": "Your UPI-Mandate is successfully Revoked towards Google Play for 399.00. Funds are unblocked from A/C No. *5949.d13326e02e324397bc20ebacb3424b16@okicici-Indian Bank"
+    },
+    "expected": {
+      "bank": "INDBNK",
+      "amount": 399.0,
+      "type": "REVOKE",
+      "channel": "AUTOPAY",
+      "account": null,
+      "merchant": "Google Play"
+    }
   }
 ]

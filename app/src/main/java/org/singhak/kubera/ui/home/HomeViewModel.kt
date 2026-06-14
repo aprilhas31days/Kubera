@@ -18,12 +18,15 @@ import org.singhak.kubera.model.CategorySpend
 import org.singhak.kubera.model.MonthSummary
 import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionCategory
+import org.singhak.kubera.repository.AutopayRepository
 import org.singhak.kubera.repository.TransactionRepository
 import org.singhak.kubera.repository.monthRange
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val repository: TransactionRepository) :
-    ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val repository: TransactionRepository,
+    private val autopayRepository: AutopayRepository,
+) : ViewModel() {
 
     private val now = Calendar.getInstance()
     private val _year = MutableStateFlow(now.get(Calendar.YEAR))
@@ -85,6 +88,7 @@ class HomeViewModel @Inject constructor(private val repository: TransactionRepos
         viewModelScope.launch(Dispatchers.IO) {
             _backfillState.value = BackfillState.Loading
             val found = repository.backfillFromDate(fromDate)
+            autopayRepository.backfillFromDate(fromDate)
             _backfillState.value = if (found) BackfillState.Idle else BackfillState.NoResults
         }
     }

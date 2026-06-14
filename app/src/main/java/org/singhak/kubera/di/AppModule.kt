@@ -11,6 +11,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import org.singhak.kubera.db.AutopayDao
 import org.singhak.kubera.db.CategoryRuleDao
 import org.singhak.kubera.db.KuberaDatabase
 import org.singhak.kubera.db.PersonDao
@@ -29,7 +30,7 @@ object AppModule {
             KuberaDatabase::class.java,
             "kubera.db"
         )
-            .addMigrations(KuberaDatabase.MIGRATION_1_2)
+            .addMigrations(KuberaDatabase.MIGRATION_1_2, KuberaDatabase.MIGRATION_2_3)
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     seedSystemRules(db)
@@ -46,6 +47,9 @@ object AppModule {
 
     @Provides
     fun providePersonDao(database: KuberaDatabase): PersonDao = database.personDao()
+
+    @Provides
+    fun provideAutopayDao(database: KuberaDatabase): AutopayDao = database.autopayDao()
 
     @Provides
     fun provideContentResolver(@ApplicationContext context: Context): ContentResolver =

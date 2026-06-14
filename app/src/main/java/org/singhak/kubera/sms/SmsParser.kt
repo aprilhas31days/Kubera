@@ -2,6 +2,7 @@ package org.singhak.kubera.sms
 
 import android.content.Context
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.singhak.kubera.model.Bank
@@ -9,7 +10,7 @@ import org.singhak.kubera.model.Transaction
 import org.singhak.kubera.model.TransactionChannel
 import org.singhak.kubera.model.TransactionType
 
-private typealias BankPatterns = Map<String, Map<TransactionChannel, Map<TransactionType, Regex>>>
+private typealias BankPatterns = Map<String, Map<TransactionChannel, Map<TransactionType, List<Regex>>>>
 
 class SmsParser(private val bankPatterns: BankPatterns) {
     val registeredBanks: Set<String> get() = bankPatterns.keys
@@ -26,15 +27,6 @@ class SmsParser(private val bankPatterns: BankPatterns) {
     }
 }
 
-/**
- * Parses a bank SMS into a [Transaction].
- *
- * @param sender the SMS sender address (e.g. "JD-INDBNK-S")
- * @param sms the raw SMS body
- * @param bankPatterns the compiled bank patterns map
- *
- * @return a [Transaction] if the SMS matches a known pattern, or `null` otherwise
- */
 private fun parseSms(
     sender: String,
     sms: String,
@@ -44,23 +36,25 @@ private fun parseSms(
     val bank = Bank.valueOf(bankKey)
 
     for ((channel, patternsByType) in bankPatterns.getValue(bankKey)) {
-        for ((type, regex) in patternsByType) {
-            val match = regex.find(sms) ?: continue
+        for ((type, regexes) in patternsByType) {
+            for (regex in regexes) {
+                val match = regex.find(sms) ?: continue
 
-            val amount = match.groups["amount"]?.value
-                ?.replace(",", "")?.toDoubleOrNull() ?: continue
-            val merchant = runCatching { match.groups["merchant"]?.value?.trim() }.getOrNull()
-            val account = runCatching { match.groups["account"]?.value?.trim() }.getOrNull()
+                val amount = match.groups["amount"]?.value
+                    ?.replace(",", "")?.toDoubleOrNull() ?: continue
+                val merchant = runCatching { match.groups["merchant"]?.value?.trim() }.getOrNull()
+                val account = runCatching { match.groups["account"]?.value?.trim() }.getOrNull()
 
-            return Transaction(
-                amount = amount,
-                type = type,
-                channel = channel,
-                account = account,
-                timestamp = System.currentTimeMillis(),
-                bank = bank,
-                merchant = merchant,
-            )
+                return Transaction(
+                    amount = amount,
+                    type = type,
+                    channel = channel,
+                    account = account,
+                    timestamp = System.currentTimeMillis(),
+                    bank = bank,
+                    merchant = merchant,
+                )
+            }
         }
     }
 
@@ -68,14 +62,9 @@ private fun parseSms(
 }
 
 /**
- * Parses a bank SMS patterns JSON into a nested map of bank → channel → type → compiled [Regex].
- *
- * The JSON structure mirrors the map:
- * `{ "INDBNK": { "UPI": { "DEBIT": "<template>", ... }, ... }, ... }`
- *
- * @param json the raw JSON string (e.g. from `bank_sms_patterns.json`)
- *
- * @return a [BankPatterns] map of bank key → channel → transaction type → compiled [Regex]
+ * Parses bank_sms_patterns.json into a nested map.
+ * Each type key maps to a list of compiled regexes — the JSON value may be
+ * a single string or an array of strings for multiple pattern variants.
  */
 private fun loadPatterns(json: String): BankPatterns {
     val root = Json.parseToJsonElement(json).jsonObject
@@ -85,21 +74,16 @@ private fun loadPatterns(json: String): BankPatterns {
             .mapValues { typeEntry ->
                 typeEntry.value.jsonObject
                     .mapKeys { TransactionType.valueOf(it.key) }
-                    .mapValues { compileTemplate(it.value.jsonPrimitive.content) }
+                    .mapValues { entry ->
+                        when (val value = entry.value) {
+                            is JsonArray -> value.map { compileTemplate(it.jsonPrimitive.content) }
+                            else -> listOf(compileTemplate(value.jsonPrimitive.content))
+                        }
+                    }
             }
     }
 }
 
-/**
- * Compiles a human-readable SMS template into a [Regex].
- *
- * Placeholders like `{amount}` become capturing groups, `{...}` becomes
- * a non-capturing wildcard, and everything else is escaped as literal text.
- *
- * @param template the SMS template (e.g. `"A/c {...} debited Rs. {amount} {...}"`)
- *
- * @return a compiled [Regex] (e.g. `A/c .+? debited Rs\. ([\d,.]+) .+?`)
- */
 private fun compileTemplate(template: String): Regex {
     val regexString = buildString {
         var lastEnd = 0
