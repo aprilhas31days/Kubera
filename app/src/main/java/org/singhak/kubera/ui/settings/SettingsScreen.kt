@@ -2,6 +2,12 @@ package org.singhak.kubera.ui.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Switch
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +52,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.singhak.kubera.BuildConfig
 import org.singhak.kubera.db.CategoryRule
+import org.singhak.kubera.debug.DebugViewModel
 import org.singhak.kubera.db.PersonIdentifier
 import org.singhak.kubera.model.PersonSummary
 import org.singhak.kubera.model.TransactionCategory
@@ -75,6 +83,7 @@ fun SettingsScreen(
     when {
         subScreen == "rules" -> RulesSubScreen(onBack = { subScreen = null })
         subScreen == "categories" -> CategoriesSubScreen(onBack = { subScreen = null })
+        subScreen == "debug" -> DebugSubScreen(onBack = { subScreen = null })
         subScreen == "circles" && selectedPersonId != null ->
             CircleDetailSubScreen(
                 personId = selectedPersonId!!,
@@ -160,6 +169,13 @@ private fun RootSettingsList(
             subtitle = "${summaries.size} ${if (summaries.size == 1) "person" else "people"}",
             onClick = { onNavigate("circles") },
         )
+        if (BuildConfig.DEBUG) {
+            SettingsRow(
+                title = "Debug",
+                subtitle = "SMS logging & inbox scanner",
+                onClick = { onNavigate("debug") },
+            )
+        }
     }
 }
 
@@ -920,6 +936,161 @@ private fun AddIdentifierSheet(onDismiss: () -> Unit, onConfirm: (String) -> Uni
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight(600)),
                 color = if (identifier.isNotBlank()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
             )
+        }
+    }
+}
+
+// ── Debug sub-screen (debug builds only) ─────────────────────────────────────
+
+@Suppress("LongMethod", "MagicNumber")
+@Composable
+private fun DebugSubScreen(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DebugViewModel = hiltViewModel(),
+) {
+    val smsLoggingEnabled by viewModel.smsLoggingEnabled.collectAsState()
+    val watchedSender by viewModel.watchedSender.collectAsState()
+    val scanDone by viewModel.scanDone.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .systemBarsPadding(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "←",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.clickable { onBack() }.padding(8.dp),
+            )
+            Text(
+                text = "Debug",
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = FontWeight(600)),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f).padding(start = 4.dp),
+            )
+        }
+
+        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+
+        Text(
+            text = "SMS LOGGING",
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+            color = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Enable SMS logging",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight(500),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = "Logs incoming SMS senders and watched messages to Logcat",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
+            Switch(
+                checked = smsLoggingEnabled,
+                onCheckedChange = { viewModel.setSmsLoggingEnabled(it) },
+            )
+        }
+
+        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+
+        if (smsLoggingEnabled) {
+            Text(
+                text = "WATCH SENDER",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+            )
+
+            Text(
+                text = "Log full message bodies for matching senders. Comma-separate multiple values. Leave blank to skip.",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp),
+            )
+
+            OutlinedTextField(
+                value = watchedSender,
+                onValueChange = { viewModel.setWatchedSender(it) },
+                singleLine = true,
+                placeholder = {
+                    Text(
+                        text = "e.g. HDFCBK, ICICIBK",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    viewModel.saveWatchedSender()
+                    keyboardController?.hide()
+                }),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            )
+
+            TextButton(
+                onClick = {
+                    viewModel.saveWatchedSender()
+                    keyboardController?.hide()
+                },
+                modifier = Modifier.align(Alignment.End).padding(end = 16.dp),
+            ) {
+                Text(
+                    text = "Save",
+                    fontWeight = FontWeight(600),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+
+            Text(
+                text = "INBOX SCAN",
+                style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+            )
+
+            Text(
+                text = "Dumps all unique senders (and watched sender messages) to Logcat tag: SmsLogger",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 12.dp),
+            )
+
+            TextButton(
+                onClick = { viewModel.scanInbox(); viewModel.clearScanDone() },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                Text(
+                    text = if (scanDone) "Scan complete — check Logcat" else "Scan inbox now",
+                    fontWeight = FontWeight(600),
+                    color = if (scanDone) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
     }
 }
